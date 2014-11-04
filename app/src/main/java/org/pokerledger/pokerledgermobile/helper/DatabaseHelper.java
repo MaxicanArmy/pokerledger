@@ -66,7 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //SESSIONS
     private static final String CREATE_TABLE_SESSIONS = "CREATE TABLE " + TABLE_SESSION + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_START + " DATETIME, " + KEY_END + " DATETIME, " + KEY_BUY_IN + " INTEGER, " + KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, "
-            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_ACTIVE + " BOOLEAN);";
+            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_ACTIVE + " BOOLEAN, is_deleted BOOLEAN, is_synced BOOLEAN);";
 
     //GAME
     private static final String CREATE_TABLE_GAMES = "CREATE TABLE " + TABLE_GAME + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_GAME + " VARCHAR(40));";
@@ -93,6 +93,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_TOURNAMENT = "CREATE TABLE " + TABLE_TOURNAMENT + "(" + KEY_ID + " INTEGER, " + KEY_ENTRANTS + " INTEGER, "
             + KEY_PLACED + " INTEGER);";
 
+    //SYNC
+    private static final String CREATE_TABLE_SYNC = "CREATE TABLE sync (username VARCHAR(20), password VARCHAR(20), sync_num INTEGER);";
+
     //constructor
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -109,9 +112,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_NOTES);
         db.execSQL(CREATE_TABLE_STRUCTURES);
         db.execSQL(CREATE_TABLE_TOURNAMENT);
+        db.execSQL(CREATE_TABLE_SYNC);
 
         Log.v("create tables", CREATE_TABLE_SESSIONS + CREATE_TABLE_BREAKS + CREATE_TABLE_CASH + CREATE_TABLE_GAMES + CREATE_TABLE_LOCATIONS + CREATE_TABLE_NOTES +
-                CREATE_TABLE_STRUCTURES + CREATE_TABLE_TOURNAMENT);
+                CREATE_TABLE_STRUCTURES + CREATE_TABLE_TOURNAMENT + CREATE_TABLE_SYNC);
 
         ContentValues StructureValues;
 
@@ -449,7 +453,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         db.close();
-        this.deleteActive(s.getId());
+        this.deleteSession(s.getId());
         return flag;
     }
 
@@ -476,8 +480,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(insertBreakQuery);
         db.close();
     }
-
+    /*
     public void deleteActive(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String sessionQuery = "DELETE FROM sessions WHERE id=" + Integer.toString(id) + ";";
+        db.execSQL(sessionQuery);
+
+        String tournamentQuery = "DELETE FROM tournament WHERE id=" + Integer.toString(id) + ";";
+        db.execSQL(tournamentQuery);
+
+        String cashQuery = "DELETE FROM cash WHERE id=" + Integer.toString(id) + ";";
+        db.execSQL(cashQuery);
+
+        String noteQuery = "DELETE FROM notes WHERE id=" + Integer.toString(id) + ";";
+        db.execSQL(noteQuery);
+
+        String breakQuery = "DELETE FROM breaks WHERE session=" + Integer.toString(id) + ";";
+        db.execSQL(breakQuery);
+        db.close();
+    }
+    */
+
+    public void deleteSession(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         String sessionQuery = "DELETE FROM sessions WHERE id=" + Integer.toString(id) + ";";
@@ -528,4 +553,3 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 }
-

@@ -209,7 +209,8 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/notes_hint"
                 android:maxLength="300"
-                android:textColor="#000" />
+                android:textColor="#000"
+                android:inputType="textCapSentences" />
         </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"

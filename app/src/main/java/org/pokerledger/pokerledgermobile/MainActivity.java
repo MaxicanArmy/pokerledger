@@ -28,6 +28,14 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /*
+        Check server for current version
+        if current version > installed version
+        download and install
+
+        this should take 2 seperate async tasks
+        */
+
         list = (ListView)findViewById(R.id.list);
 
         new LoadActiveSessions().execute();
@@ -79,6 +87,78 @@ public class MainActivity extends Activity {
             case R.id.statistics :
                 Intent statistics = new Intent(this, StatisticsActivity.class);
                 this.startActivity(statistics);
+                break;
+            case R.id.sync :
+                //start sync activity, displays username/password text inputs, login button, register button, forgot password button
+                            //(have radio group(login, register, reset password) that displays different forms
+                //login onclick
+
+                    //if username == db.sync.username || db.sync.sync_num == 0
+                        //validate username/password against website db
+                        //if valid
+                            //if website.sync.sync_num != db.sync.sync_num
+                                //alert:This acct is currently synced with a different phone. Continuing will overwrite all session data currently on this phone
+                                // and make this the primary phone
+                                //if continue
+                                    //wipe phone db
+                                    //set db.username/password
+                                    //DL xml of new acct records
+                                    //parse and insert
+                                    //increment website sync_num & set phone sync_num
+                                //else
+                                    //return to sync activity
+                            //else
+                                //upload xml of all unsynced sessions and set as synced
+                        //else
+                            //alert: the credentials you entered are not valid
+                            //return to sync activity
+
+                    //elseif username != db.sync.username
+                        //alert: this phone is already synced with a different acct. If you continue all phone session data will be overwritten.
+                        //if continue
+                            //validate username/password against website db
+                            //if valid
+                                //wipe phone db
+                                //set db.username/password
+                                //DL xml of new acct records
+                                //parse and insert
+                                //increment website sync_num & set phone sync_num
+                            //else
+                                //alert: the credentials you entered are not valid
+                        //else
+                            //return to sync activity
+
+                //register onclick
+                    //check if username/password are valid
+                    //if valid
+                        //if db.sync.sync_num == 0
+                            //create new user on website
+                            //set db.username/password
+                            //increment sync_num on website
+                            //set db.sync.sync_num to website
+                            //upload xml of all unsynced sessions and set as synced
+                        //else
+                            //alert: this phone is already synced with a different acct. If you continue all phone session data will be overwritten.
+                            //if continue
+                                //create new user on website
+                                //set db.username/password
+                                //increment sync_num on website
+                                //set db.sync.sync_num to website
+                                //wipe phone
+                            //else
+                                //return to sync activity
+                    //else
+                        //alert: The username password are do not meet X criteria
+                        //return to sync activity
+
+                //forgot password onlick
+                    //alertdialog asking for acct email
+                    //if email is in records
+                        //set website password to temp password
+                        //email temp password
+                    //else
+                        //alert: acct not found
+
                 break;
 
         }

@@ -2,11 +2,8 @@ package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
 import android.app.FragmentManager;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -33,7 +30,6 @@ public class HistoryActivity extends Activity {
 
         new LoadFinishedSessions().execute();
 
-        /*
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -43,13 +39,11 @@ public class HistoryActivity extends Activity {
                 Bundle b = new Bundle();
                 b.putString("SESSION_JSON", gson.toJson(parent.getAdapter().getItem(position)));
 
-                EditSessionFragment dialog = new EditSessionFragment();
+                EditHistoryFragment dialog = new EditHistoryFragment();
                 dialog.setArguments(b);
-                dialog.show(manager, "EditSession");
+                dialog.show(manager, "EditHistory");
             }
         });
-        */
-
     }
     /*
     @Override
@@ -111,17 +105,17 @@ public class HistoryActivity extends Activity {
 
         @Override
         protected void onPostExecute(Void result) {
-            SessionListAdapter adapter = new SessionListAdapter(HistoryActivity.this, sessions);
+            HistoryListAdapter adapter = new HistoryListAdapter(HistoryActivity.this, sessions);
 
             list.setAdapter(adapter);
         }
     }
-    /*
+
 
     protected void notifyListChange() {
-        new LoadActiveSessions().execute();
+        new LoadFinishedSessions().execute();
     }
-
+    /*
     public class SaveActiveSession extends AsyncTask<Void, Void, Void> {
         Session current;
 

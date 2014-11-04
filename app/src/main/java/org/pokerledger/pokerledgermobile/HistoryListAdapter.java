@@ -10,16 +10,15 @@ import android.widget.TextView;
 import org.pokerledger.pokerledgermobile.model.Session;
 
 import java.util.ArrayList;
-
 /**
- * Created by Max on 9/16/14.
+ * Created by Max on 11/2/14.
  */
-public class SessionListAdapter extends ArrayAdapter<Session>{
+public class HistoryListAdapter extends ArrayAdapter<Session> {
     private final Activity context;
     private final ArrayList<Session> active;
 
-    public SessionListAdapter(Activity context, ArrayList<Session> active) {
-        super(context, R.layout.list_session, active);
+    public HistoryListAdapter(Activity context, ArrayList<Session> active) {
+        super(context, R.layout.list_history, active);
         this.context = context;
         this.active= active;
     }
@@ -27,17 +26,18 @@ public class SessionListAdapter extends ArrayAdapter<Session>{
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         LayoutInflater inflater = context.getLayoutInflater();
-        View rowView= inflater.inflate(R.layout.list_session, null, true);
+        View rowView= inflater.inflate(R.layout.list_history, null, true);
 
         TextView txtLocation = (TextView) rowView.findViewById(R.id.location);
         TextView txtStart = (TextView) rowView.findViewById(R.id.start);
-        TextView txtBuyIn = (TextView) rowView.findViewById(R.id.buyin);
+        TextView txtProfit = (TextView) rowView.findViewById(R.id.profit);
         TextView txtGame = (TextView) rowView.findViewById(R.id.game);
 
         txtLocation.setText(active.get(position).getLocation().getLocation());
         txtStart.setText(active.get(position).getStart());
-        txtBuyIn.setText("$" + Integer.toString(active.get(position).getBuyIn()));
+        txtProfit.setText("$" + Integer.toString(active.get(position).getCashOut() - active.get(position).getBuyIn()));
         txtGame.setText(active.get(position).getStructure().getStructure()+ " " + active.get(position).getGame().getGame());
         return rowView;
     }
+
 }

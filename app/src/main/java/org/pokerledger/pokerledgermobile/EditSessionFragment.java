@@ -152,7 +152,7 @@ public class EditSessionFragment extends DialogFragment implements AdapterView.O
         @Override
         protected Void doInBackground(Void... params) {
             DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.activity);
-            db.deleteActive(EditSessionFragment.this.current.getId());
+            db.deleteSession(EditSessionFragment.this.current.getId());
 
             return null;
         }
