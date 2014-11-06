@@ -36,19 +36,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_NOTE = "notes";
     private static final String TABLE_SESSION = "sessions";
     private static final String TABLE_STRUCTURE = "structures";
+    private static final String TABLE_SYNC = "sync";
     private static final String TABLE_TOURNAMENT = "tournament";
 
     //common column names
-    private static final String KEY_ID = "id";
+    private static final String KEY_ID = "id";  //this is deprecated, delete soon
+    private static final String KEY_SESSION_ID = "session_id";
     private static final String KEY_START = "start";
     private static final String KEY_END = "end";
     private static final String KEY_GAME = "game";
     private static final String KEY_LOCATION = "location";
     private static final String KEY_STRUCTURE = "structure";
-    private static final String KEY_ACTIVE = "active";
+    private static final String KEY_ACTIVE = "active"; //this is deprecated, delete soon
+
+    //BREAKS table - column names
+    private static final String KEY_BREAK_ID = "break_id";
 
     //CASH table - column names
     private static final String KEY_BLINDS = "blinds";
+
+    //GAMES table - column names
+    private static final String KEY_GAME_ID = "game_id";
+
+    //LOCATIONS table - column names
+    private static final String KEY_LOCATION_ID = "location_id";
 
     //NOTES table
     private static final String KEY_NOTE = "note";
@@ -56,45 +67,54 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //SESSION table - column names
     private static final String KEY_BUY_IN = "buy_in";
     private static final String KEY_CASH_OUT = "cash_out";
+    private static final String KEY_STATE = "state";
+    private static final String KEY_SYNCED = "synced";
+
+    //STRUCTURE table - column names
+    private static final String KEY_STRUCTURE_ID = "structure_id";
 
     //TOURNAMENT table - column names
     private static final String KEY_ENTRANTS = "entrants";
     private static final String KEY_PLACED = "placed";
 
+    //SYNC table - column names
+    private static final String KEY_USERNAME = "username";
+    private static final String KEY_PASSWORD = "password";
+    private static final String KEY_SYNC_NUM = "sync_num";
+
     //create statements for tables
-
-    //SESSIONS
-    private static final String CREATE_TABLE_SESSIONS = "CREATE TABLE " + TABLE_SESSION + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_START + " DATETIME, " + KEY_END + " DATETIME, " + KEY_BUY_IN + " INTEGER, " + KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, "
-            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_ACTIVE + " BOOLEAN, is_deleted BOOLEAN, is_synced BOOLEAN);";
-
-    //GAME
-    private static final String CREATE_TABLE_GAMES = "CREATE TABLE " + TABLE_GAME + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_GAME + " VARCHAR(40));";
-
-    //LOCATION
-    private static final String CREATE_TABLE_LOCATIONS = "CREATE TABLE " + TABLE_LOCATION + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_LOCATION + " VARCHAR(40));";
-
-    //STRUCTURE
-    private static final String CREATE_TABLE_STRUCTURES = "CREATE TABLE " + TABLE_STRUCTURE + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_STRUCTURE + " VARCHAR(40));";
-
     //BREAKS
-    private static final String CREATE_TABLE_BREAKS = "CREATE TABLE " + TABLE_BREAK + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, session INTEGER, "
+    private static final String CREATE_TABLE_BREAKS = "CREATE TABLE " + TABLE_BREAK + "(" + KEY_BREAK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_SESSION_ID + " INTEGER, "
             + KEY_START + " DATETIME, " + KEY_END + " DATETIME);";
 
     //CASH
-    private static final String CREATE_TABLE_CASH = "CREATE TABLE " + TABLE_CASH + "(" + KEY_ID + " INTEGER, " + KEY_BLINDS + " VARCHAR(40));";
+    private static final String CREATE_TABLE_CASH = "CREATE TABLE " + TABLE_CASH + "(" + KEY_SESSION_ID + " INTEGER, " + KEY_BLINDS + " VARCHAR(40));";
+
+    //GAME
+    private static final String CREATE_TABLE_GAMES = "CREATE TABLE " + TABLE_GAME + "(" + KEY_GAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_GAME + " VARCHAR(40));";
+
+    //LOCATION
+    private static final String CREATE_TABLE_LOCATIONS = "CREATE TABLE " + TABLE_LOCATION + "(" + KEY_LOCATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_LOCATION + " VARCHAR(40));";
 
     //NOTE
-    private static final String CREATE_TABLE_NOTES = "CREATE TABLE " + TABLE_NOTE + "(" + KEY_ID + " INTEGER, " + KEY_NOTE + " TEXT);";
+    private static final String CREATE_TABLE_NOTES = "CREATE TABLE " + TABLE_NOTE + "(" + KEY_SESSION_ID + " INTEGER, " + KEY_NOTE + " TEXT);";
 
-    //TOURNAMENT
-    private static final String CREATE_TABLE_TOURNAMENT = "CREATE TABLE " + TABLE_TOURNAMENT + "(" + KEY_ID + " INTEGER, " + KEY_ENTRANTS + " INTEGER, "
-            + KEY_PLACED + " INTEGER);";
+    //SESSIONS
+    private static final String CREATE_TABLE_SESSIONS = "CREATE TABLE " + TABLE_SESSION + "(" + KEY_SESSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_START + " DATETIME, " + KEY_END + " DATETIME, " + KEY_BUY_IN + " INTEGER, " + KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, "
+            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_STATE + " INTEGER, " + KEY_SYNCED + " BOOLEAN);";
+
+    //STRUCTURE
+    private static final String CREATE_TABLE_STRUCTURES = "CREATE TABLE " + TABLE_STRUCTURE + "(" + KEY_STRUCTURE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_STRUCTURE + " VARCHAR(40));";
 
     //SYNC
-    private static final String CREATE_TABLE_SYNC = "CREATE TABLE sync (username VARCHAR(20), password VARCHAR(20), sync_num INTEGER);";
+    private static final String CREATE_TABLE_SYNC = "CREATE TABLE " + TABLE_SYNC + " (" + KEY_USERNAME + "  VARCHAR(20), " + KEY_PASSWORD + " VARCHAR(20), " + KEY_SYNC_NUM + " INTEGER);";
+
+    //TOURNAMENT
+    private static final String CREATE_TABLE_TOURNAMENT = "CREATE TABLE " + TABLE_TOURNAMENT + "(" + KEY_SESSION_ID + " INTEGER, " + KEY_ENTRANTS + " INTEGER, "
+            + KEY_PLACED + " INTEGER);";
 
     //constructor
     public DatabaseHelper(Context context) {
@@ -217,7 +237,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             do {
                 Structure s = new Structure();
-                s.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                s.setId(c.getInt(c.getColumnIndex(KEY_STRUCTURE_ID)));
                 s.setStructure(c.getString(c.getColumnIndex(KEY_STRUCTURE)));
 
                 structures.add(s);
@@ -238,7 +258,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             do {
                 Game g = new Game();
-                g.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                g.setId(c.getInt(c.getColumnIndex(KEY_GAME_ID)));
                 g.setGame(c.getString(c.getColumnIndex(KEY_GAME)));
 
                 games.add(g);
@@ -259,7 +279,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             do {
                 Location l = new Location();
-                l.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+                l.setId(c.getInt(c.getColumnIndex(KEY_LOCATION_ID)));
                 l.setLocation(c.getString(c.getColumnIndex(KEY_LOCATION)));
 
                 locations.add(l);
@@ -269,15 +289,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return locations;
     }
 
-    public ArrayList<Session> getActiveSessions() {
+    public ArrayList<Session> getSessions(int state) {
         ArrayList<Session> sessions = new ArrayList<Session>();
 
-        String query = "SELECT sessions.id AS sessionID, sessions.start, sessions.end, sessions.buy_in, sessions.cash_out, sessions.active, " +
-                "structures.id AS structureID, structures.structure, games.id AS gameID, games.game, locations.id AS locationID, locations.location, cash.blinds, " +
-                "tournament.entrants, notes.note FROM sessions INNER JOIN structures ON sessions.structure=structures.id " +
-                "INNER JOIN games ON sessions.game=games.id INNER JOIN locations ON sessions.location=locations.id LEFT JOIN notes ON sessions.id=notes.id " +
-                "LEFT JOIN tournament ON sessions.id=tournament.id LEFT JOIN cash ON sessions.id=cash.id WHERE sessions.active=1;";
-
+        String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
+                KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " + TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " +
+                TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " + TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_CASH + "." + KEY_BLINDS + ", " +
+                TABLE_TOURNAMENT + "." + KEY_ENTRANTS + ", " + KEY_NOTE + " FROM " + TABLE_SESSION + " INNER JOIN " + TABLE_STRUCTURE +
+                " ON " + TABLE_SESSION + "." + KEY_STRUCTURE + "=" + KEY_STRUCTURE_ID + " INNER JOIN " + TABLE_GAME +
+                " ON " + TABLE_SESSION + "." + KEY_GAME + "=" + KEY_GAME_ID +" INNER JOIN " + TABLE_LOCATION +
+                " ON " + TABLE_SESSION + "." + KEY_LOCATION + "=" + KEY_LOCATION_ID + " LEFT JOIN " + TABLE_NOTE +
+                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_NOTE + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_TOURNAMENT +
+                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_TOURNAMENT + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_CASH +
+                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " WHERE " + KEY_STATE + "=" + state + ";";
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
@@ -286,34 +310,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             do {
                 Session s = new Session();
-                s.setId(c.getInt(c.getColumnIndex("sessionID")));
+                s.setId(c.getInt(c.getColumnIndex(KEY_SESSION_ID)));
                 s.setStart(c.getString(c.getColumnIndex(KEY_START)));
                 s.setEnd(c.getString(c.getColumnIndex(KEY_END)));
                 s.setBuyIn(c.getInt(c.getColumnIndex(KEY_BUY_IN)));
                 s.setCashOut(c.getInt(c.getColumnIndex(KEY_CASH_OUT)));
-                s.setStructure(new Structure(c.getInt(c.getColumnIndex("structureID")), c.getString(c.getColumnIndex(KEY_STRUCTURE))));
-                s.setGame(new Game(c.getInt(c.getColumnIndex("gameID")), c.getString(c.getColumnIndex(KEY_GAME))));
-                s.setLocation(new Location(c.getInt(c.getColumnIndex("locationID")), c.getString(c.getColumnIndex(KEY_LOCATION))));
-                s.setActive(c.getInt(c.getColumnIndex(KEY_ACTIVE)) == 1);
+                s.setStructure(new Structure(c.getInt(c.getColumnIndex(KEY_STRUCTURE_ID)), c.getString(c.getColumnIndex(KEY_STRUCTURE))));
+                s.setGame(new Game(c.getInt(c.getColumnIndex(KEY_GAME_ID)), c.getString(c.getColumnIndex(KEY_GAME))));
+                s.setLocation(new Location(c.getInt(c.getColumnIndex(KEY_LOCATION_ID)), c.getString(c.getColumnIndex(KEY_LOCATION))));
+                s.setState(c.getInt(c.getColumnIndex(KEY_STATE)));
 
-                if (!c.isNull(c.getColumnIndex("blinds"))) {
+                if (!c.isNull(c.getColumnIndex(KEY_BLINDS))) {
                     s.setBlinds(c.getString(c.getColumnIndex(KEY_BLINDS)));
                 }
-                else if (!c.isNull(c.getColumnIndex("entrants"))) {
-                    s.setEntrants(c.getInt(c.getColumnIndex("entrants")));
+
+                if (!c.isNull(c.getColumnIndex(KEY_ENTRANTS))) {
+                    s.setEntrants(c.getInt(c.getColumnIndex(KEY_ENTRANTS)));
                 }
 
-                if (!c.isNull(c.getColumnIndex("note"))) {
+                if (state == 0 && !c.isNull(c.getColumnIndex(KEY_PLACED))) {
+                    s.setEntrants(c.getInt(c.getColumnIndex(KEY_PLACED)));
+                }
+
+                if (!c.isNull(c.getColumnIndex(KEY_NOTE))) {
                     s.setNote(c.getString(c.getColumnIndex(KEY_NOTE)));
                 }
 
                 SQLiteDatabase db2 = this.getReadableDatabase();
-                Cursor b = db2.rawQuery("SELECT * FROM breaks WHERE breaks.session=" + Integer.toString(c.getInt(c.getColumnIndex("sessionID"))) + " ORDER BY id ASC", null);
+                Cursor b = db2.rawQuery("SELECT * FROM "+ TABLE_BREAK +" WHERE " + KEY_SESSION_ID + "=" + s.getId() + " ORDER BY " + KEY_BREAK_ID + " ASC", null);
 
                 if (b.moveToFirst()) {
                     ArrayList<Break> breaks = new ArrayList<Break>();
                     do {
-                        breaks.add(new Break(b.getInt(b.getColumnIndex("id")), b.getString(b.getColumnIndex("start")), b.getString(b.getColumnIndex("end"))));
+                        breaks.add(new Break(b.getInt(b.getColumnIndex(KEY_BREAK_ID)), b.getString(b.getColumnIndex(KEY_START)), b.getString(b.getColumnIndex(KEY_END))));
                     } while (b.moveToNext());
 
                     s.setBreaks(breaks);
@@ -323,63 +352,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } while (c.moveToNext());
         }
         db.close();
-        return sessions;
-    }
 
-    public ArrayList<Session> getFinishedSessions() {
-        ArrayList<Session> sessions = new ArrayList<Session>();
-
-        String query = "SELECT sessions.id AS sessionID, sessions.start, sessions.end, sessions.buy_in, sessions.cash_out, sessions.active, " +
-                "structures.id AS structureID, structures.structure, games.id AS gameID, games.game, locations.id AS locationID, locations.location, cash.blinds, " +
-                "tournament.entrants, notes.note FROM sessions INNER JOIN structures ON sessions.structure=structures.id " +
-                "INNER JOIN games ON sessions.game=games.id INNER JOIN locations ON sessions.location=locations.id LEFT JOIN notes ON sessions.id=notes.id " +
-                "LEFT JOIN tournament ON sessions.id=tournament.id LEFT JOIN cash ON sessions.id=cash.id WHERE sessions.active=0;";
-
-
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery(query, null);
-
-        //loop through rows and add to session if any results returned
-        if (c.moveToFirst()) {
-            do {
-                Session s = new Session();
-                s.setId(c.getInt(c.getColumnIndex("sessionID")));
-                s.setStart(c.getString(c.getColumnIndex(KEY_START)));
-                s.setEnd(c.getString(c.getColumnIndex(KEY_END)));
-                s.setBuyIn(c.getInt(c.getColumnIndex(KEY_BUY_IN)));
-                s.setCashOut(c.getInt(c.getColumnIndex(KEY_CASH_OUT)));
-                s.setStructure(new Structure(c.getInt(c.getColumnIndex("structureID")), c.getString(c.getColumnIndex(KEY_STRUCTURE))));
-                s.setGame(new Game(c.getInt(c.getColumnIndex("gameID")), c.getString(c.getColumnIndex(KEY_GAME))));
-                s.setLocation(new Location(c.getInt(c.getColumnIndex("locationID")), c.getString(c.getColumnIndex(KEY_LOCATION))));
-                s.setActive(c.getInt(c.getColumnIndex(KEY_ACTIVE)) == 1);
-
-                if (!c.isNull(c.getColumnIndex("blinds"))) {
-                    s.setBlinds(c.getString(c.getColumnIndex(KEY_BLINDS)));
-                }
-                else if (!c.isNull(c.getColumnIndex("entrants"))) {
-                    s.setEntrants(c.getInt(c.getColumnIndex("entrants")));
-                }
-
-                if (!c.isNull(c.getColumnIndex("note"))) {
-                    s.setNote(c.getString(c.getColumnIndex(KEY_NOTE)));
-                }
-
-                SQLiteDatabase db2 = this.getReadableDatabase();
-                Cursor b = db2.rawQuery("SELECT * FROM breaks WHERE breaks.session=" + Integer.toString(c.getInt(c.getColumnIndex("sessionID"))) + " ORDER BY id ASC", null);
-
-                if (b.moveToFirst()) {
-                    ArrayList<Break> breaks = new ArrayList<Break>();
-                    do {
-                        breaks.add(new Break(b.getInt(b.getColumnIndex("id")), b.getString(b.getColumnIndex("start")), b.getString(b.getColumnIndex("end"))));
-                    } while (b.moveToNext());
-
-                    s.setBreaks(breaks);
-                }
-
-                sessions.add(s);
-            } while (c.moveToNext());
-        }
-        db.close();
         return sessions;
     }
 
@@ -387,25 +360,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int flag = 1;
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "INSERT INTO sessions (start, end, buy_in, cash_out, structure, game, location, active) VALUES ('" +
-                s.getStart() + "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " +
-                s.getGame().getId() + ", " + s.getLocation().getId() + ", 1);";
+        String query = "INSERT INTO sessions (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_STRUCTURE + ", " + KEY_GAME +
+                ", " + KEY_LOCATION + ", " + KEY_STATE + ", " + KEY_SYNCED + ") VALUES ('" + s.getStart() + "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " +
+                s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() + ", " + s.getLocation().getId() + ", 1, 0);";
 
         db.execSQL(query);
 
-        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS id;", null);
+        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS " + KEY_SESSION_ID + ";", null);
         if (c.moveToFirst()) {
-            int session_id = c.getInt(c.getColumnIndex("id"));
+            int session_id = c.getInt(c.getColumnIndex(KEY_SESSION_ID));
 
             if (s.getBlinds() != null) {
-                db.execSQL("INSERT INTO cash (id, blinds) VALUES (" + session_id + ", '" + s.getBlinds() + "');");
+                db.execSQL("INSERT INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + session_id + ", '" + s.getBlinds() + "');");
             }
             else {
-                db.execSQL("INSERT INTO tournament (id, entrants, placed) VALUES (" + session_id + ", " + s.getEntrants() + ", " + s.getPlaced() + ");");
+                db.execSQL("INSERT INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" +
+                        session_id + ", " + s.getEntrants() + ", " + s.getPlaced() + ");");
             }
 
             if (s.getNote() != null) {
-                db.execSQL("INSERT INTO notes (id, note) VALUES (" + session_id + ", " + DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
+                db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + session_id + ", " +
+                        DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
             }
         }
         else {
@@ -420,32 +395,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int flag = 1;
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "INSERT INTO sessions (start, end, buy_in, cash_out, structure, game, location, active) VALUES ('" +
-                s.getStart() + "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " +
-                s.getGame().getId() + ", " + s.getLocation().getId() + ", 0);";
+        String query = "INSERT INTO sessions (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_STRUCTURE + ", " + KEY_GAME +
+                ", " + KEY_LOCATION + ", " + KEY_STATE + ", " + KEY_SYNCED + ") VALUES ('" + s.getStart() + "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " +
+                s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() + ", " + s.getLocation().getId() + ", 0, 0);";
 
         db.execSQL(query);
 
-        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS id;", null);
+        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS " + KEY_SESSION_ID + ";", null);
         if (c.moveToFirst()) {
-            int session_id = c.getInt(c.getColumnIndex("id"));
+            int session_id = c.getInt(c.getColumnIndex(KEY_SESSION_ID));
 
             if (s.getBlinds() != null) {
-                db.execSQL("INSERT INTO cash (id, blinds) VALUES (" + session_id + ", '" + s.getBlinds() + "');");
+                db.execSQL("INSERT INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + session_id + ", '" + s.getBlinds() + "');");
             }
             else {
-                db.execSQL("INSERT INTO tournament (id, entrants, placed) VALUES (" + session_id + ", " + s.getEntrants() + ", " + s.getPlaced() + ");");
+                db.execSQL("INSERT INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + session_id + ", " +
+                        s.getEntrants() + ", " + s.getPlaced() + ");");
             }
 
             if (s.getBreaks() != null) {
                 ArrayList<Break> breaks = s.getBreaks();
                 for (int i = 0; i < breaks.size(); i++) {
-                    db.execSQL("INSERT INTO breaks (session, start, end) VALUES (" + session_id + ", '" + breaks.get(i).getStart() + "', '" + breaks.get(i).getEnd() + "');");
+                    db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ") VALUES (" + session_id + ", '" +
+                            breaks.get(i).getStart() + "', '" + breaks.get(i).getEnd() + "');");
                 }
             }
 
             if (s.getNote() != null) {
-                db.execSQL("INSERT INTO notes (id, note) VALUES (" + session_id + ", " + DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
+                db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + session_id + ", " +
+                        DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
             }
         }
         else {
@@ -458,7 +436,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void toggleBreak(int id) {
-        String query = "SELECT * FROM breaks WHERE breaks.session=" + Integer.toString(id) + " ORDER BY id ASC;";
+        String query = "SELECT * FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + id + " ORDER BY " + KEY_BREAK_ID + " ASC;";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
@@ -469,63 +447,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String currentDateTime = cal.get(Calendar.YEAR) + "-" + df.format(cal.get(Calendar.MONTH) + 1) + "-" + df.format(cal.get(Calendar.DAY_OF_MONTH)) + " " + df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE));
 
         if (c.moveToLast()) {
-            if (c.isNull(c.getColumnIndex("end"))) {
-                String setBreakEndQuery = "UPDATE breaks SET end='" + currentDateTime + "' WHERE id=" + c.getInt(c.getColumnIndex("id")) + ";";
+            if (c.isNull(c.getColumnIndex(KEY_END))) {
+                String setBreakEndQuery = "UPDATE " + TABLE_BREAK + " SET " + KEY_END + "='" + currentDateTime + "' WHERE " + KEY_SESSION_ID + "=" +
+                        c.getInt(c.getColumnIndex(KEY_SESSION_ID)) + ";";
                 db.execSQL(setBreakEndQuery);
                 return;
             }
         }
 
-        String insertBreakQuery = "INSERT INTO breaks (session, start, end) VALUES (" + id + ", '" + currentDateTime + "', null);";
+        String insertBreakQuery = "INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ") VALUES (" + id + ", '" +
+                currentDateTime + "', null);";
         db.execSQL(insertBreakQuery);
         db.close();
     }
-    /*
-    public void deleteActive(int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String sessionQuery = "DELETE FROM sessions WHERE id=" + Integer.toString(id) + ";";
-        db.execSQL(sessionQuery);
-
-        String tournamentQuery = "DELETE FROM tournament WHERE id=" + Integer.toString(id) + ";";
-        db.execSQL(tournamentQuery);
-
-        String cashQuery = "DELETE FROM cash WHERE id=" + Integer.toString(id) + ";";
-        db.execSQL(cashQuery);
-
-        String noteQuery = "DELETE FROM notes WHERE id=" + Integer.toString(id) + ";";
-        db.execSQL(noteQuery);
-
-        String breakQuery = "DELETE FROM breaks WHERE session=" + Integer.toString(id) + ";";
-        db.execSQL(breakQuery);
-        db.close();
-    }
-    */
 
     public void deleteSession(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
-
-        String sessionQuery = "DELETE FROM sessions WHERE id=" + Integer.toString(id) + ";";
+        String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_STATE + "=-1 WHERE " + KEY_SESSION_ID + "=" + id + ";";
+        db.execSQL(query);
+        /*
+        String sessionQuery = "DELETE FROM " + TABLE_SESSION + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
         db.execSQL(sessionQuery);
 
-        String tournamentQuery = "DELETE FROM tournament WHERE id=" + Integer.toString(id) + ";";
+        String tournamentQuery = "DELETE FROM " + TABLE_TOURNAMENT + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
         db.execSQL(tournamentQuery);
 
-        String cashQuery = "DELETE FROM cash WHERE id=" + Integer.toString(id) + ";";
+        String cashQuery = "DELETE FROM " + TABLE_CASH + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
         db.execSQL(cashQuery);
 
-        String noteQuery = "DELETE FROM notes WHERE id=" + Integer.toString(id) + ";";
+        String noteQuery = "DELETE FROM " + TABLE_NOTE + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
         db.execSQL(noteQuery);
 
-        String breakQuery = "DELETE FROM breaks WHERE session=" + Integer.toString(id) + ";";
+        String breakQuery = "DELETE FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
         db.execSQL(breakQuery);
+        */
         db.close();
     }
 
     public void rebuyAddon(int id, int amount) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "UPDATE sessions SET buy_in=buy_in+" + amount + " WHERE id=" + id + ";";
+        String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_BUY_IN + "=" + KEY_BUY_IN + "+" + amount + " WHERE " + KEY_SESSION_ID + "=" + id + ";";
         db.execSQL(query);
         db.close();
     }
@@ -533,7 +495,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void addLocation(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "INSERT INTO locations (location) VALUES (" + DatabaseUtils.sqlEscapeString(name) + ");";
+        String query = "INSERT INTO " + TABLE_LOCATION + " (" + KEY_LOCATION + ") VALUES (" + DatabaseUtils.sqlEscapeString(name) + ");";
         db.execSQL(query);
         db.close();
     }
@@ -542,11 +504,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         int total = 0;
 
-        String query = "SELECT sum(cash_out) cash_out, sum(buy_in) buy_in FROM sessions WHERE active=0;";
+        String query = "SELECT sum(" + KEY_CASH_OUT + ") " + KEY_CASH_OUT + ", sum(" + KEY_BUY_IN + ") " + KEY_BUY_IN + " FROM " + TABLE_SESSION + " WHERE " +
+                KEY_STATE + "=0;";
         Cursor c = db.rawQuery(query, null);
 
         if (c.moveToFirst()) {
-            total = c.getInt(c.getColumnIndex("cash_out")) - c.getInt(c.getColumnIndex("buy_in"));
+            total = c.getInt(c.getColumnIndex(KEY_CASH_OUT)) - c.getInt(c.getColumnIndex(KEY_BUY_IN));
         }
 
         db.close();

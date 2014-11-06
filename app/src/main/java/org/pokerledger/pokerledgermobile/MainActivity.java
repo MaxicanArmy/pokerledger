@@ -193,7 +193,7 @@ public class MainActivity extends Activity {
         protected Void doInBackground(Void... params) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
-            sessions = db.getActiveSessions();
+            sessions = db.getSessions(1);
 
             return null;
         }

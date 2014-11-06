@@ -21,13 +21,12 @@ public class Session {
     private String blinds;
     private String note;
     private ArrayList<Break> breaks;
-
-    private boolean active;
+    private int state;
 
     //constructors
     public Session() {}
 
-    public Session(String s, String e, int bi, int co, Structure str, Game game, Location loc, boolean a) {
+    public Session(String s, String e, int bi, int co, Structure str, Game game, Location loc, int state) {
         this.start = s;
         this.end = e;
         this.buyIn = bi;
@@ -35,10 +34,10 @@ public class Session {
         this.structure = str;
         this.game = game;
         this.location = loc;
-        this.active = a;
+        this.state = state;
     }
 
-    public Session(int id, String s, String e, int bi, int co, Structure str, Game game, Location loc, boolean a) {
+    public Session(int id, String s, String e, int bi, int co, Structure str, Game game, Location loc, int state) {
         this.id = id;
         this.start = s;
         this.end = e;
@@ -47,7 +46,7 @@ public class Session {
         this.structure = str;
         this.game = game;
         this.location = loc;
-        this.active = a;
+        this.state = state;
     }
 
     @Override
@@ -87,9 +86,13 @@ public class Session {
     public void setLocation(Location i) {
         this.location = i;
     }
-
+    /*
     public void setActive(boolean b) {
         this.active = b;
+    }
+    */
+    public void setState(int s) {
+        this.state = s;
     }
 
     public void setEntrants(int e) {
@@ -144,9 +147,13 @@ public class Session {
     public Location getLocation() {
         return this.location;
     }
-
+    /*
     public boolean getActive() {
         return this.active;
+    }
+    */
+    public int getState () {
+        return this.state;
     }
 
     public int getEntrants() {

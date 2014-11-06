@@ -98,7 +98,7 @@ public class HistoryActivity extends Activity {
         protected Void doInBackground(Void... params) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
-            sessions = db.getFinishedSessions();
+            sessions = db.getSessions(0);
 
             return null;
         }
