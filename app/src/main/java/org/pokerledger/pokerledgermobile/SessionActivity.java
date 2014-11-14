@@ -211,15 +211,18 @@ public class SessionActivity extends Activity {
         @Override
         protected void onPostExecute(Void result) {
             Spinner locationSpinner = (Spinner) findViewById(R.id.location);
-            ArrayAdapter locAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, locations);
-            locationSpinner.setAdapter(locAdapter);
+            ArrayAdapter locationAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, locations);
+            locationAdapter.setDropDownViewResource(R.layout.spinner_item_view);
+            locationSpinner.setAdapter(locationAdapter);
 
             Spinner gameSpinner = (Spinner) findViewById(R.id.game);
             ArrayAdapter gameAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, games);
+            gameAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             gameSpinner.setAdapter(gameAdapter);
 
             Spinner structureSpinner = (Spinner) findViewById(R.id.structure);
             ArrayAdapter structureAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, structures);
+            structureAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             structureSpinner.setAdapter(structureAdapter);
 
 

@@ -32,7 +32,7 @@ public class FinishSessionActivity extends SessionActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finish_session);
 
-        new SessionActivity.InitializeData().execute();
+        new InitializeData().execute();
 
         String json = getIntent().getStringExtra("SESSION_JSON");
         if (json != null) {
@@ -123,7 +123,7 @@ public class FinishSessionActivity extends SessionActivity  {
         String endTime = ((Button) this.findViewById(R.id.end_time)).getHint().toString();
 
         if (startDate.equals("Start Date") || startTime.equals("Start Time") || endDate.equals("End Date") || endTime.equals("End Time")) {
-            Toast.makeText(this, "Set start and end date/time before adding breaks.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Set start/end date/time before adding breaks.", Toast.LENGTH_SHORT).show();
         }
         else {
             this.current.setStart(startDate + " " + startTime);
@@ -162,6 +162,9 @@ public class FinishSessionActivity extends SessionActivity  {
         RadioButton tourneyRadio = (RadioButton) findViewById(R.id.radio_tourney);
 
         if (tourneyRadio.isChecked()) {
+            //next line is required to ensure that the database helper knows for what kind of session to generate queries (in case the user changed the session type)
+            this.current.setBlinds(null);
+
             String entrantsText = ((EditText) findViewById(R.id.entrants)).getText().toString();
 
             if (entrantsText.equals("")) {
@@ -251,6 +254,7 @@ public class FinishSessionActivity extends SessionActivity  {
         this.current.setGame((Game) ((Spinner) findViewById(R.id.game)).getSelectedItem());
         this.current.setLocation((Location) ((Spinner) findViewById(R.id.location)).getSelectedItem());
 
+        this.current.setState(0);
         Gson gson = new Gson();
         String json = gson.toJson(this.current);
 

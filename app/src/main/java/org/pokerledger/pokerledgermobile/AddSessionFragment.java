@@ -17,6 +17,9 @@ import java.util.ArrayList;
  * Created by Max on 9/16/14.
  */
 public class AddSessionFragment extends DialogFragment implements AdapterView.OnItemClickListener {
+    private static final int ACTIVE_RESULT = 1;
+    private static final int FINISHED_RESULT = 2;
+
     private ArrayList<String> options = new ArrayList<String>();
     private ListView myList;
 
@@ -46,11 +49,11 @@ public class AddSessionFragment extends DialogFragment implements AdapterView.On
 
         if (position == 0) {
             Intent intent = new Intent(getActivity(), ActiveSessionActivity.class);
-            getActivity().startActivityForResult(intent, 1);
+            getActivity().startActivityForResult(intent, ACTIVE_RESULT);
         }
         else if (position == 1) {
             Intent intent = new Intent(getActivity(), FinishSessionActivity.class);
-            getActivity().startActivityForResult(intent, 2);
+            getActivity().startActivityForResult(intent, FINISHED_RESULT);
         }
     }
 }

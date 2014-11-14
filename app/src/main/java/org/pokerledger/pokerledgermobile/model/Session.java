@@ -86,11 +86,7 @@ public class Session {
     public void setLocation(Location i) {
         this.location = i;
     }
-    /*
-    public void setActive(boolean b) {
-        this.active = b;
-    }
-    */
+
     public void setState(int s) {
         this.state = s;
     }
@@ -147,11 +143,7 @@ public class Session {
     public Location getLocation() {
         return this.location;
     }
-    /*
-    public boolean getActive() {
-        return this.active;
-    }
-    */
+
     public int getState () {
         return this.state;
     }

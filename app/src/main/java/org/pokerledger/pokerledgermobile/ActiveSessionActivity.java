@@ -61,6 +61,7 @@ public class ActiveSessionActivity extends SessionActivity {
 
             if (sbText.equals("") && !bbText.equals("")) {
                 Toast.makeText(this, "If there is only one blind enter it in SB field.", Toast.LENGTH_SHORT).show();
+                this.setContentView(findViewById(R.id.small_blind));
                 return;
             }
 
@@ -77,6 +78,7 @@ public class ActiveSessionActivity extends SessionActivity {
 
         if (startDate.equals("Start Date")) {
             Toast.makeText(this, "Select a start date for this session.", Toast.LENGTH_SHORT).show();
+            //((Button) findViewById(R.id.start_date)).focus
             return;
         }
 
@@ -99,6 +101,7 @@ public class ActiveSessionActivity extends SessionActivity {
         session.setGame((Game) ((Spinner) findViewById(R.id.game)).getSelectedItem());
         session.setLocation((Location) ((Spinner) findViewById(R.id.location)).getSelectedItem());
 
+        session.setState(1);
         Gson gson = new Gson();
         String json = gson.toJson(session);
 
