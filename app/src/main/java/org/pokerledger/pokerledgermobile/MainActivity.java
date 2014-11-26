@@ -1,7 +1,6 @@
 package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
@@ -19,8 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
@@ -44,37 +42,42 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainActivity extends Activity {
+    TextView profit;
     private static final int ACTIVE_RESULT = 1;
     private static final int FINISHED_RESULT = 2;
+    private static boolean updateCheck = true;
 
     ListView list;
-    //private ProgressBar pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //pb.setVisibility(View.VISIBLE);
-
         int v = 0;
-        try {
-            v = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            // Huh? Really?
-        }
-        new CheckUpdates(this).execute(v);
+        if (updateCheck) {
+            try {
+                v = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            } catch (PackageManager.NameNotFoundException e) {
+                // Huh? Really?
+            }
 
+            new CheckUpdates(this).execute(v);
+            updateCheck = false;
+        }
 
         list = (ListView)findViewById(R.id.list);
 
         new LoadActiveSessions().execute();
+
+        this.profit = (TextView) findViewById(R.id.profit);
+
+        new LoadStatistics().execute();
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -108,8 +111,9 @@ public class MainActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
 
         switch (item.getItemId()) {
-            case R.id.action_settings :
-                return true;
+            //case R.id.action_settings :
+                //break up setting activity
+                //break;
             case R.id.add_session :
                 FragmentManager manager = getFragmentManager();
 
@@ -194,7 +198,6 @@ public class MainActivity extends Activity {
                         //email temp password
                     //else
                         //alert: acct not found
-
                 //break;
 
         }
@@ -328,7 +331,6 @@ public class MainActivity extends Activity {
                 dialog.setIcon(android.R.drawable.ic_dialog_alert);
                 dialog.show();
             }
-            //new InstallUpdate(mContext).execute("http://layout.pokerledger.org/apks/version0-7-3.apk");
         }
 
         public String postData(Integer version) {
@@ -345,9 +347,9 @@ public class MainActivity extends Activity {
                 // send the variable and value, in other words post, to the URL
                 response = httpclient.execute(httppost);
             } catch (ClientProtocolException e) {
-                // process execption
+                // process exception
             } catch (IOException e) {
-                // process execption
+                // process exception
             }
 
             HttpEntity entity = response.getEntity();
@@ -374,7 +376,7 @@ public class MainActivity extends Activity {
         protected void onPreExecute(){
             super.onPreExecute();
             pdia = new ProgressDialog(mContext);
-            pdia.setMessage("Downloading update");
+            pdia.setMessage("Downloading update...");
             pdia.setIndeterminate(false);
             pdia.setMax(100);
             pdia.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -384,7 +386,9 @@ public class MainActivity extends Activity {
 
         @Override
         protected String doInBackground(String... sUrl) {
-            String path = getFilesDir().getAbsolutePath() + "/plm_update";
+            String path = Environment.getExternalStorageDirectory() + "/update2.apk"; //attempt using this line on a real device with and without an sd card
+            //String path = "/sdcard/plm_update.apk"; //This line works for setting path
+            Log.v("Environment.getExternalStorageDirectory()", path);
 
             try {
                 URL url = new URL(sUrl[0]);
@@ -394,12 +398,11 @@ public class MainActivity extends Activity {
                 connection.setDoOutput(true);
                 connection.connect();
 
-                int fileLength = connection.getContentLength(); //is returning -1 because the content-length header field is not set probably
+                int fileLength = connection.getContentLength(); //it might just return -1 on the emulator, not sure
 
                 // download the file
                 InputStream input = new BufferedInputStream(url.openStream());
-                //OutputStream output = new FileOutputStream(path);
-                FileOutputStream output = mContext.openFileOutput("plm_update.apk", Context.MODE_WORLD_READABLE|Context.MODE_WORLD_WRITEABLE);
+                OutputStream output = new FileOutputStream(path);
 
                 byte data[] = new byte[1024];
                 long total = 0;
@@ -422,7 +425,6 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(Integer... progress) {
-            Log.v("progress", Integer.toString(progress[0]));
             pdia.setProgress(progress[0]);
         }
 
@@ -433,11 +435,29 @@ public class MainActivity extends Activity {
 
             Intent i = new Intent();
             i.setAction(Intent.ACTION_VIEW);
-            i.setDataAndType(Uri.fromFile(new File(getFilesDir() + "/plm_update.apk")), "application/vnd.android.package-archive" );
+            i.setDataAndType(Uri.fromFile(new File(path)), "application/vnd.android.package-archive" );
             i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            Log.d("Lofting", "About to install new .apk");
-            mContext.startActivity(i);
+            this.mContext.startActivity(i);
         }
     }
 
+    public class LoadStatistics extends AsyncTask<Void, Void, Void> {
+        int totalProfit;
+
+        public LoadStatistics() {}
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            DatabaseHelper db;
+            db = new DatabaseHelper(getApplicationContext());
+            totalProfit = db.getProfit();
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            MainActivity.this.profit.setText("$" + Integer.toString(this.totalProfit));
+        }
+    }
 }

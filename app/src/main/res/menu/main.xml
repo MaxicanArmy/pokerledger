@@ -13,21 +13,22 @@
                 android:title="@string/action_add_session"
                 android:showAsAction="ifRoom" />
 
-            <item android:id="@+id/history"
-                android:title="@string/action_view_history"
-                android:showAsAction="ifRoom" />
-
             <item android:id="@+id/statistics"
                 android:title="@string/action_statistics"
+                android:showAsAction="ifRoom" />
+
+            <item android:id="@+id/history"
+                android:title="@string/action_view_history"
                 android:showAsAction="ifRoom" />
 <!--
             <item android:id="@+id/sync"
                 android:title="@string/action_sync"
                 android:showAsAction="ifRoom" />
--->
+
             <item android:id="@+id/action_settings"
                 android:title="@string/action_settings"
                 android:showAsAction="ifRoom" />
+-->
         </menu>
     </item>
 </menu>

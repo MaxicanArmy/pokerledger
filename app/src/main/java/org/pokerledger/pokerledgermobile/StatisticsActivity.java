@@ -39,7 +39,7 @@ public class StatisticsActivity extends Activity {
 
         @Override
         protected void onPostExecute(Void result) {
-            StatisticsActivity.this.profit.setText(Integer.toString(this.totalProfit));
+            StatisticsActivity.this.profit.setText("$" + Integer.toString(this.totalProfit));
         }
     }
 }

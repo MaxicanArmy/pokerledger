@@ -1,6 +1,7 @@
 package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +10,11 @@ import android.widget.TextView;
 
 import org.pokerledger.pokerledgermobile.model.Session;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+
 /**
  * Created by Max on 11/2/14.
  */
@@ -33,9 +38,46 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         TextView txtProfit = (TextView) rowView.findViewById(R.id.profit);
         TextView txtGame = (TextView) rowView.findViewById(R.id.game);
 
+
         txtLocation.setText(active.get(position).getLocation().getLocation());
-        txtStart.setText(active.get(position).getStart());
-        txtProfit.setText("$" + Integer.toString(active.get(position).getCashOut() - active.get(position).getBuyIn()));
+
+        Calendar t1 = Calendar.getInstance();
+        Calendar t2 = Calendar.getInstance();
+        //SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.EN_US);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        try {
+            t1.setTime(sdf.parse(active.get(position).getStart()));
+            t2.setTime(sdf.parse(active.get(position).getEnd()));
+        } catch (Exception e) {
+            //fucking parse exception needed to be handled
+        }
+        long milliStart = t1.getTimeInMillis();
+        long milliEnd = t2.getTimeInMillis();
+        long millis = t2.getTimeInMillis() - t1.getTimeInMillis();
+        long seconds = (t2.getTimeInMillis() - t1.getTimeInMillis())/1000;
+        int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis())/60000;
+        int hours = minutes / 60;
+        int remainder = minutes % 60;
+        String timePlayed = "";
+
+        if (hours > 0) {
+            timePlayed += Integer.toString(hours) + "h";
+        }
+
+        if (remainder > 0) {
+            timePlayed += " " + remainder + "m";
+        }
+
+        txtStart.setText(timePlayed);
+
+        int total = active.get(position).getCashOut() - active.get(position).getBuyIn();
+        if (total < 0 ) {
+            txtProfit.setTextColor(Color.parseColor("#ff0000"));
+            txtProfit.setText("($" + Integer.toString(Math.abs(total)) + ")");
+        } else {
+            txtProfit.setText("$" + Integer.toString(total));
+        }
+
         txtGame.setText(active.get(position).getStructure().getStructure()+ " " + active.get(position).getGame().getGame());
         return rowView;
     }

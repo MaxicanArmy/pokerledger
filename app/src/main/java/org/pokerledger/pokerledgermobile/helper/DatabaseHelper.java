@@ -303,7 +303,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " ON " + TABLE_SESSION + "." + KEY_LOCATION + "=" + KEY_LOCATION_ID + " LEFT JOIN " + TABLE_NOTE +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_NOTE + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_TOURNAMENT +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_TOURNAMENT + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_CASH +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " WHERE " + KEY_STATE + "=" + state + ";";
+                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " WHERE " + KEY_STATE + "=" + state + " ORDER BY " +
+                KEY_START + " DESC;";
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
@@ -559,22 +560,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_STATE + "=-1 WHERE " + KEY_SESSION_ID + "=" + id + ";";
         db.execSQL(query);
-        /*
-        String sessionQuery = "DELETE FROM " + TABLE_SESSION + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
-        db.execSQL(sessionQuery);
-
-        String tournamentQuery = "DELETE FROM " + TABLE_TOURNAMENT + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
-        db.execSQL(tournamentQuery);
-
-        String cashQuery = "DELETE FROM " + TABLE_CASH + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
-        db.execSQL(cashQuery);
-
-        String noteQuery = "DELETE FROM " + TABLE_NOTE + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
-        db.execSQL(noteQuery);
-
-        String breakQuery = "DELETE FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + Integer.toString(id) + ";";
-        db.execSQL(breakQuery);
-        */
         db.close();
     }
 

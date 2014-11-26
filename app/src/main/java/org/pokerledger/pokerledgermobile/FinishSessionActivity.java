@@ -239,7 +239,7 @@ public class FinishSessionActivity extends SessionActivity  {
 
         this.current.setEnd(endDate + " " + endTime);
 
-        if (this.current.getEnd().compareTo(this.current.getStart()) < 0) {
+        if (this.current.getEnd().compareTo(this.current.getStart()) <= 0) {
             Toast.makeText(this, "Session end time must be after start time.", Toast.LENGTH_SHORT).show();
             return;
         }
