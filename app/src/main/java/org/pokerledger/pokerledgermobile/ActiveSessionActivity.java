@@ -1,6 +1,7 @@
 package org.pokerledger.pokerledgermobile;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
 import org.pokerledger.pokerledgermobile.model.Game;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
@@ -99,15 +101,19 @@ public class ActiveSessionActivity extends SessionActivity {
 
         session.setStructure((Structure) ((Spinner) findViewById(R.id.structure)).getSelectedItem());
         session.setGame((Game) ((Spinner) findViewById(R.id.game)).getSelectedItem());
-        session.setLocation((Location) ((Spinner) findViewById(R.id.location)).getSelectedItem());
+
+        Spinner location = (Spinner) findViewById(R.id.location);
+
+        if (location.getSelectedItem() != null) {
+            session.setLocation((Location) location.getSelectedItem());
+        } else {
+            Toast.makeText(this, "You must enter the location.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         session.setState(1);
-        Gson gson = new Gson();
-        String json = gson.toJson(session);
-
-        Intent intent = new Intent();
-        intent.putExtra("SESSION_JSON", json);
-        setResult(RESULT_OK, intent);
+        new SaveSession().execute(session);
+        setResult(RESULT_OK);
         finish();
     }
 }

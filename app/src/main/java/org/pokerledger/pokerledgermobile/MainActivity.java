@@ -12,12 +12,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -42,17 +42,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class MainActivity extends Activity {
     TextView profit;
+    TextView timePlayed;
+    TextView hourlyWage;
+    TextView listHeader;
+    ListView list;
     private static final int ACTIVE_RESULT = 1;
     private static final int FINISHED_RESULT = 2;
     private static boolean updateCheck = true;
 
-    ListView list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +75,14 @@ public class MainActivity extends Activity {
             updateCheck = false;
         }
 
+        listHeader = (TextView) findViewById(R.id.active_games_header);
         list = (ListView)findViewById(R.id.list);
 
         new LoadActiveSessions().execute();
 
         this.profit = (TextView) findViewById(R.id.profit);
-
+        this.timePlayed = (TextView) findViewById(R.id.time_played);
+        this.hourlyWage = (TextView) findViewById(R.id.hourly_wage);
         new LoadStatistics().execute();
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -95,7 +101,6 @@ public class MainActivity extends Activity {
         });
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -207,14 +212,10 @@ public class MainActivity extends Activity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            String json = "";
-            json = data.getStringExtra("SESSION_JSON");
+            new LoadActiveSessions().execute();
 
-            if (requestCode == ACTIVE_RESULT) {
-                new SaveActiveSession(new Gson().fromJson(json, Session.class)).execute();
-            }
-            else if (requestCode == FINISHED_RESULT) {
-                new SaveFinishedSession(new Gson().fromJson(json, Session.class)).execute();
+            if (requestCode == FINISHED_RESULT) {
+                new LoadStatistics().execute();
             }
         }
     }
@@ -241,51 +242,22 @@ public class MainActivity extends Activity {
         protected void onPostExecute(Void result) {
             SessionListAdapter adapter = new SessionListAdapter(MainActivity.this, sessions);
 
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            if (sessions.size() > 0) {
+                float scale = getResources().getDisplayMetrics().density;
+                int dpAsPixels = (int) (16*scale + 0.5f);
+
+                params.setMargins(0,0,0,dpAsPixels);
+                params.addRule(RelativeLayout.BELOW, R.id.active_games_header);
+                list.setLayoutParams(params);
+                listHeader.setVisibility(View.VISIBLE);
+            } else {
+                params.setMargins(0,0,0,0);
+                list.setLayoutParams(params);
+                listHeader.setVisibility(View.GONE);
+            }
+
             list.setAdapter(adapter);
-        }
-    }
-
-    public class SaveActiveSession extends AsyncTask<Void, Void, Void> {
-        Session current;
-
-        public SaveActiveSession(Session s) {
-            this.current = s;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            DatabaseHelper db;
-            db = new DatabaseHelper(getApplicationContext());
-            db.saveSession(this.current);
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            new LoadActiveSessions().execute();
-        }
-    }
-
-    public class SaveFinishedSession extends AsyncTask<Void, Void, Void> {
-        Session current;
-
-        public SaveFinishedSession(Session s) {
-            this.current = s;
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            DatabaseHelper db;
-            db = new DatabaseHelper(getApplicationContext());
-            db.saveSession(this.current);
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            new LoadActiveSessions().execute();
         }
     }
 
@@ -386,9 +358,7 @@ public class MainActivity extends Activity {
 
         @Override
         protected String doInBackground(String... sUrl) {
-            String path = Environment.getExternalStorageDirectory() + "/update2.apk"; //attempt using this line on a real device with and without an sd card
-            //String path = "/sdcard/plm_update.apk"; //This line works for setting path
-            Log.v("Environment.getExternalStorageDirectory()", path);
+            String path = Environment.getExternalStorageDirectory() + "/update2.apk"; //this method works on non-emulated devices with no sdcard
 
             try {
                 URL url = new URL(sUrl[0]);
@@ -417,8 +387,7 @@ public class MainActivity extends Activity {
                 output.close();
                 input.close();
             } catch (Exception e) {
-                Log.e("YourApp", "Well that didn't work out so well...");
-                Log.e("YourApp", e.getMessage());
+                //more exception catching, thanks java
             }
             return path;
         }
@@ -443,6 +412,7 @@ public class MainActivity extends Activity {
 
     public class LoadStatistics extends AsyncTask<Void, Void, Void> {
         int totalProfit;
+        double totalTime;
 
         public LoadStatistics() {}
 
@@ -451,13 +421,38 @@ public class MainActivity extends Activity {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
             totalProfit = db.getProfit();
-
+            totalTime = db.getTime();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
+            int hours = (int) Math.floor(totalTime);
+            double minutes = Math.round((totalTime - hours) * 100) * 60 / 100; //ridiculous additional math to defeat bizarre Double arithmetic not being precise
+            double hourly;
+            if (totalTime == 0) {
+                hourly = 0;
+            }
+            else {
+                hourly = (double) this.totalProfit / totalTime;
+            }
+            String timePlayed = "";
+
+            if (hours > 0) {
+                timePlayed += Integer.toString(hours) + "h";
+            }
+
+            if (minutes > 0) {
+                timePlayed += " " + (int) minutes + "m";
+            }
+            else if (hours == 0) {
+                timePlayed = "0m";
+            }
+
             MainActivity.this.profit.setText("$" + Integer.toString(this.totalProfit));
+            MainActivity.this.timePlayed.setText(timePlayed);
+            DecimalFormat df = new DecimalFormat("0.00");
+            MainActivity.this.hourlyWage.setText("$" + df.format(hourly));
         }
     }
 }

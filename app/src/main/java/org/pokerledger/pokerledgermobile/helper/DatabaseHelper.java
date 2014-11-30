@@ -14,7 +14,9 @@ import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Structure;
 
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -445,7 +447,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         if (s.getId() == 0) {
-            Log.v("saveSession", "getID = 0");
             String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
                     KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_LOCATION + ", " + KEY_STATE + ", " + KEY_SYNCED + ") VALUES ('" + s.getStart() +
                     "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() +
@@ -480,7 +481,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 flag = 0;
             }
         } else if (s.getId() > 0) {
-            Log.v("saveSession", "getID > 0");
             String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_START + "='" + s.getStart() + "', " + KEY_END + "='" + s.getEnd() + "', " + KEY_BUY_IN + "=" +
                     s.getBuyIn() + ", " + KEY_CASH_OUT + "=" + s.getCashOut() + ", " + KEY_STRUCTURE + "=" + s.getStructure().getId() + ", " + KEY_GAME +
                     "=" + s.getGame().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " + KEY_STATE + "=" + s.getState() + ", " + KEY_SYNCED + "=0 WHERE " +
@@ -593,5 +593,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.close();
         return total;
+    }
+
+    public double getTime() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int total = 0;
+        String query = "SELECT " + KEY_START + ", " + KEY_END + " FROM " + TABLE_SESSION + " WHERE " + KEY_STATE + "=0;";
+
+        Cursor c = db.rawQuery(query, null);
+
+        if (c.moveToFirst()) {
+            do {
+                Calendar t1 = Calendar.getInstance();
+                Calendar t2 = Calendar.getInstance();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                try {
+                    t1.setTime(sdf.parse(c.getString(c.getColumnIndex(KEY_START))));
+                    t2.setTime(sdf.parse(c.getString(c.getColumnIndex(KEY_END))));
+                } catch (Exception e) {
+                    //fucking parse exception needed to be handled
+                }
+
+                int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis()) / 60000;
+                total += minutes;
+            } while (c.moveToNext());
+        }
+
+        int hours = total / 60;
+        int remainder = total % 60;
+
+        double time = (double) hours + ((double) remainder / 60); //gives hours and minutes as a decimal representation
+        db.close();
+        return time;
     }
 }

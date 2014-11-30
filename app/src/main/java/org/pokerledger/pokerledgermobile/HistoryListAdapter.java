@@ -2,6 +2,7 @@ package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,6 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
 
         Calendar t1 = Calendar.getInstance();
         Calendar t2 = Calendar.getInstance();
-        //SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.EN_US);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         try {
             t1.setTime(sdf.parse(active.get(position).getStart()));
@@ -51,13 +51,11 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         } catch (Exception e) {
             //fucking parse exception needed to be handled
         }
-        long milliStart = t1.getTimeInMillis();
-        long milliEnd = t2.getTimeInMillis();
-        long millis = t2.getTimeInMillis() - t1.getTimeInMillis();
-        long seconds = (t2.getTimeInMillis() - t1.getTimeInMillis())/1000;
+
         int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis())/60000;
         int hours = minutes / 60;
         int remainder = minutes % 60;
+
         String timePlayed = "";
 
         if (hours > 0) {

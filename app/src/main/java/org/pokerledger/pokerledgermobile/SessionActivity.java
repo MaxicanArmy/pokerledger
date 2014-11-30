@@ -262,4 +262,16 @@ public class SessionActivity extends Activity {
             locationSpinner.setSelection(locations.size() - 1);
         }
     }
+
+    public class SaveSession extends AsyncTask<Session, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Session... s) {
+            DatabaseHelper db;
+            db = new DatabaseHelper(getApplicationContext());
+            db.saveSession(s[0]);
+
+            return null;
+        }
+    }
 }

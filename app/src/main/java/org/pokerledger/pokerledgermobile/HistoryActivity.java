@@ -2,8 +2,11 @@ package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -24,7 +27,7 @@ public class HistoryActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_history);
 
         list = (ListView)findViewById(R.id.list);
 
@@ -45,7 +48,7 @@ public class HistoryActivity extends Activity {
             }
         });
     }
-    /*
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -61,18 +64,25 @@ public class HistoryActivity extends Activity {
         int id = item.getItemId();
 
         switch (item.getItemId()) {
-            case R.id.action_settings :
-                return true;
             case R.id.add_session :
                 FragmentManager manager = getFragmentManager();
 
                 AddSessionFragment dialog = new AddSessionFragment();
                 dialog.show(manager, "AddSession");
+                break;
+            case R.id.history :
+                Intent history = new Intent(this, HistoryActivity.class);
+                this.startActivity(history);
+                break;
+            case R.id.statistics :
+                Intent statistics = new Intent(this, StatisticsActivity.class);
+                this.startActivity(statistics);
+                break;
 
         }
         return super.onOptionsItemSelected(item);
     }
-
+    /*
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {

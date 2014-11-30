@@ -252,15 +252,19 @@ public class FinishSessionActivity extends SessionActivity  {
 
         this.current.setStructure((Structure) ((Spinner) findViewById(R.id.structure)).getSelectedItem());
         this.current.setGame((Game) ((Spinner) findViewById(R.id.game)).getSelectedItem());
-        this.current.setLocation((Location) ((Spinner) findViewById(R.id.location)).getSelectedItem());
+
+        Spinner location = (Spinner) findViewById(R.id.location);
+
+        if (location.getSelectedItem() != null) {
+            this.current.setLocation((Location) location.getSelectedItem());
+        } else {
+            Toast.makeText(this, "You must enter the location.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         this.current.setState(0);
-        Gson gson = new Gson();
-        String json = gson.toJson(this.current);
-
-        Intent intent = new Intent();
-        intent.putExtra("SESSION_JSON", json);
-        setResult(RESULT_OK, intent);
+        new SaveSession().execute(this.current);
+        setResult(RESULT_OK);
         finish();
     }
 }
