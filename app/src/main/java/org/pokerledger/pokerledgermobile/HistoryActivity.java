@@ -74,10 +74,10 @@ public class HistoryActivity extends Activity {
                 Intent history = new Intent(this, HistoryActivity.class);
                 this.startActivity(history);
                 break;
-            case R.id.statistics :
-                Intent statistics = new Intent(this, StatisticsActivity.class);
-                this.startActivity(statistics);
-                break;
+            //case R.id.statistics :
+            //    Intent statistics = new Intent(this, StatisticsActivity.class);
+            //    this.startActivity(statistics);
+            //    break;
 
         }
         return super.onOptionsItemSelected(item);

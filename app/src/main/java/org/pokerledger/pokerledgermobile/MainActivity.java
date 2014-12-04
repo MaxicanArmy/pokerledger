@@ -129,10 +129,10 @@ public class MainActivity extends Activity {
                 Intent history = new Intent(this, HistoryActivity.class);
                 this.startActivity(history);
                 break;
-            case R.id.statistics :
-                Intent statistics = new Intent(this, StatisticsActivity.class);
-                this.startActivity(statistics);
-                break;
+            //case R.id.statistics :
+            //    Intent statistics = new Intent(this, StatisticsActivity.class);
+            //    this.startActivity(statistics);
+            //    break;
             //case R.id.sync :
                 //start sync activity, displays username/password text inputs, login button, register button, forgot password button
                             //(have radio group(login, register, reset password) that displays different forms
@@ -293,7 +293,7 @@ public class MainActivity extends Activity {
                 dialog.setCancelable(false);
                 dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int buttonId) {
-                        new InstallUpdate(mContext).execute("http://layout.pokerledger.org/apks/"+responseString);
+                        new InstallUpdate(mContext).execute(responseString);
                     }
                 });
                 dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", new DialogInterface.OnClickListener() {
@@ -308,7 +308,7 @@ public class MainActivity extends Activity {
         public String postData(Integer version) {
             HttpClient httpclient = new DefaultHttpClient();
             // specify the URL you want to post to
-            HttpPost httppost = new HttpPost("http://layout.pokerledger.org/updatecheck.php");
+            HttpPost httppost = new HttpPost("http://pokerledger.org/updatecheck.php");
             HttpResponse response = null;
             try {
                 // create a list to store HTTP variables and their values
@@ -358,16 +358,21 @@ public class MainActivity extends Activity {
 
         @Override
         protected String doInBackground(String... sUrl) {
-            String path = Environment.getExternalStorageDirectory() + "/update2.apk"; //this method works on non-emulated devices with no sdcard
+            String path = Environment.getExternalStorageDirectory() + "/pl_update.apk"; //this method works on non-emulated devices with no sdcard, might not work with a mounted sdcard
 
             try {
                 URL url = new URL(sUrl[0]);
-
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(10000); //set timeout to 10 seconds
+                connection.setDoOutput(true);
+                connection.connect();
+/*
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setDoOutput(true);
                 connection.connect();
-
+*/
                 int fileLength = connection.getContentLength(); //it might just return -1 on the emulator, not sure
 
                 // download the file
@@ -386,6 +391,9 @@ public class MainActivity extends Activity {
                 output.flush();
                 output.close();
                 input.close();
+            } catch (java.net.SocketTimeoutException e) {
+                //MAKE TOAST that states connection timed out
+                return null;
             } catch (Exception e) {
                 //more exception catching, thanks java
             }
@@ -402,11 +410,13 @@ public class MainActivity extends Activity {
         protected void onPostExecute(String path) {
             pdia.dismiss();
 
-            Intent i = new Intent();
-            i.setAction(Intent.ACTION_VIEW);
-            i.setDataAndType(Uri.fromFile(new File(path)), "application/vnd.android.package-archive" );
-            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            this.mContext.startActivity(i);
+            if (path != null) {
+                Intent i = new Intent();
+                i.setAction(Intent.ACTION_VIEW);
+                i.setDataAndType(Uri.fromFile(new File(path)), "application/vnd.android.package-archive");
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                this.mContext.startActivity(i);
+            }
         }
     }
 

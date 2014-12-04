@@ -19,11 +19,12 @@
                 android:icon="@drawable/ic_action_history"
                 android:title="@string/action_view_history"
                 android:showAsAction="ifRoom" />
-
+<!--
             <item android:id="@+id/statistics"
                 android:icon="@drawable/ic_action_statistics"
                 android:title="@string/action_statistics"
                 android:showAsAction="ifRoom" />
+                -->
         </menu>
     </item>
     <!--

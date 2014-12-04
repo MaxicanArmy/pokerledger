@@ -143,6 +143,7 @@ public class FinishSessionActivity extends SessionActivity  {
 
         if (buyinText.equals("")) {
             Toast.makeText(this, "You must enter a buy in amount.", Toast.LENGTH_SHORT).show();
+            findViewById(R.id.buy_in).requestFocus();
             return;
         }
         else {
@@ -153,6 +154,7 @@ public class FinishSessionActivity extends SessionActivity  {
 
         if (cashOutText.equals("")) {
             Toast.makeText(this, "You must enter a cash out amount.", Toast.LENGTH_SHORT).show();
+            findViewById(R.id.cash_out).requestFocus();
             return;
         }
         else {
@@ -169,6 +171,7 @@ public class FinishSessionActivity extends SessionActivity  {
 
             if (entrantsText.equals("")) {
                 Toast.makeText(this, "You must enter the number of entrants.", Toast.LENGTH_SHORT).show();
+                findViewById(R.id.entrants).requestFocus();
                 return;
             }
             else {
@@ -179,6 +182,7 @@ public class FinishSessionActivity extends SessionActivity  {
 
             if (placedText.equals("")) {
                 Toast.makeText(this, "You must enter what position you placed.", Toast.LENGTH_SHORT).show();
+                findViewById(R.id.placed).requestFocus();
                 return;
             }
             else {
@@ -195,11 +199,13 @@ public class FinishSessionActivity extends SessionActivity  {
 
             if (sbText.equals("") && !bbText.equals("")) {
                 Toast.makeText(this, "If there is only one blind enter it in SB field.", Toast.LENGTH_SHORT).show();
+                findViewById(R.id.small_blind).requestFocus();
                 return;
             }
 
             if (sbText.equals("") && bbText.equals("") && straddleText.equals("") && bringInText.equals("") && anteText.equals("") && pointsText.equals("")) {
                 Toast.makeText(this, "At least one blind must be entered for cash sessions.", Toast.LENGTH_SHORT).show();
+                findViewById(R.id.small_blind).requestFocus();
                 return;
             }
 

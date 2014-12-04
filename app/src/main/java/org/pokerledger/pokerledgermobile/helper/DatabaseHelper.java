@@ -14,7 +14,6 @@ import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Structure;
 
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,14 +41,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_TOURNAMENT = "tournament";
 
     //common column names
-    private static final String KEY_ID = "id";  //this is deprecated, delete soon
     private static final String KEY_SESSION_ID = "session_id";
     private static final String KEY_START = "start";
     private static final String KEY_END = "end";
     private static final String KEY_GAME = "game";
     private static final String KEY_LOCATION = "location";
     private static final String KEY_STRUCTURE = "structure";
-    private static final String KEY_ACTIVE = "active"; //this is deprecated, delete soon
 
     //BREAKS table - column names
     private static final String KEY_BREAK_ID = "break_id";
@@ -360,88 +357,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return sessions;
     }
-    /*
-    public int saveActive(Session s) {
-        int flag = 1;
-        SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_LOCATION + ", " + KEY_STATE + ", " + KEY_SYNCED + ") VALUES ('" + s.getStart() +
-                "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() +
-                ", " + s.getLocation().getId() + ", 1, 0);";
-
-        db.execSQL(query);
-
-        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS " + KEY_SESSION_ID + ";", null);
-        if (c.moveToFirst()) {
-            int session_id = c.getInt(c.getColumnIndex(KEY_SESSION_ID));
-
-            if (s.getBlinds() != null) {
-                db.execSQL("INSERT INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + session_id + ", '" + s.getBlinds() + "');");
-            }
-            else {
-                db.execSQL("INSERT INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + session_id + ", " +
-                        s.getEntrants() + ", " + s.getPlaced() + ");");
-            }
-
-            if (s.getNote() != null) {
-                db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + session_id + ", " +
-                        DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
-            }
-        }
-        else {
-            flag = 0;
-        }
-
-        db.close();
-        return flag;
-    }
-
-    public int saveFinished(Session s) {
-        int flag = 1;
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_LOCATION + ", " + KEY_STATE + ", " + KEY_SYNCED + ") VALUES ('" + s.getStart() +
-                "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() +
-                ", " + s.getLocation().getId() + ", 0, 0);";
-
-        db.execSQL(query);
-
-        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS " + KEY_SESSION_ID + ";", null);
-        if (c.moveToFirst()) {
-            int session_id = c.getInt(c.getColumnIndex(KEY_SESSION_ID));
-
-            if (s.getBlinds() != null) {
-                db.execSQL("INSERT INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + session_id + ", '" + s.getBlinds() + "');");
-            }
-            else {
-                db.execSQL("INSERT INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + session_id + ", " +
-                        s.getEntrants() + ", " + s.getPlaced() + ");");
-            }
-
-            if (s.getBreaks() != null) {
-                ArrayList<Break> breaks = s.getBreaks();
-                for (int i = 0; i < breaks.size(); i++) {
-                    db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ") VALUES (" + session_id + ", '" +
-                            breaks.get(i).getStart() + "', '" + breaks.get(i).getEnd() + "');");
-                }
-            }
-
-            if (s.getNote() != null) {
-                db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + session_id + ", " +
-                        DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
-            }
-        }
-        else {
-            flag = 0;
-        }
-
-        db.close();
-        this.deleteSession(s.getId());
-        return flag;
-    }
-    */
     public int saveSession(Session s) {
         int flag = 1;
         SQLiteDatabase db = this.getWritableDatabase();

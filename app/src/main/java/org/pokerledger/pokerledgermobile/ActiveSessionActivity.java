@@ -38,6 +38,7 @@ public class ActiveSessionActivity extends SessionActivity {
 
         if (buyinText.equals("")) {
             Toast.makeText(this, "You must enter a buy in amount.", Toast.LENGTH_SHORT).show();
+            findViewById(R.id.buy_in).requestFocus();
             return;
         }
         else {
@@ -64,11 +65,13 @@ public class ActiveSessionActivity extends SessionActivity {
             if (sbText.equals("") && !bbText.equals("")) {
                 Toast.makeText(this, "If there is only one blind enter it in SB field.", Toast.LENGTH_SHORT).show();
                 this.setContentView(findViewById(R.id.small_blind));
+                findViewById(R.id.small_blind).requestFocus();
                 return;
             }
 
             if (sbText.equals("") && bbText.equals("") && straddleText.equals("") && bringInText.equals("") && anteText.equals("") && pointsText.equals("")) {
                 Toast.makeText(this, "At least one blind must be entered for cash sessions.", Toast.LENGTH_SHORT).show();
+                findViewById(R.id.small_blind).requestFocus();
                 return;
             }
 
