@@ -3,6 +3,7 @@ package org.pokerledger.pokerledgermobile;
 import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -45,7 +46,7 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
             Gson gson = new Gson();
             this.current = gson.fromJson(getArguments().getString("SESSION_JSON"), Session.class);
 
-            options.add("View Session");
+            options.add("Edit Session");
             options.add("Delete Session");
         }
 
@@ -61,6 +62,10 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
 
         if (position == 0) {
             //insert code to view/edit finished sessions
+
+            Intent intent = new Intent(this.activity, UpdateSessionActivity.class);
+            intent.putExtra("SESSION_JSON", getArguments().getString("SESSION_JSON"));
+            this.activity.startActivityForResult(intent, 2);
         }
         else if (position == 1) {
             AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();

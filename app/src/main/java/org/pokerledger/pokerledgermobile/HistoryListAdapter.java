@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.pokerledger.pokerledgermobile.model.Break;
 import org.pokerledger.pokerledgermobile.model.Session;
 
 import java.text.DecimalFormat;
@@ -26,7 +27,7 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
     public HistoryListAdapter(Activity context, ArrayList<Session> active) {
         super(context, R.layout.list_history, active);
         this.context = context;
-        this.active= active;
+        this.active = active;
     }
 
     @Override
@@ -38,7 +39,6 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         TextView txtStart = (TextView) rowView.findViewById(R.id.start);
         TextView txtProfit = (TextView) rowView.findViewById(R.id.profit);
         TextView txtGame = (TextView) rowView.findViewById(R.id.game);
-
 
         txtLocation.setText(active.get(position).getLocation().getLocation());
 
@@ -53,6 +53,30 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         }
 
         int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis())/60000;
+
+        //start break time code
+        ArrayList<Break> bl = active.get(position).getBreaks();
+
+        if (bl != null) {
+            if (!bl.isEmpty()) {
+                int breakMinutes = 0;
+                for (Break b : bl) {
+                    Calendar bs = Calendar.getInstance();
+                    Calendar be = Calendar.getInstance();
+                    try {
+                        bs.setTime(sdf.parse(b.getStart()));
+                        be.setTime(sdf.parse(b.getEnd()));
+                    } catch (Exception e) {
+                        //fucking parse exception needed to be handled
+                    }
+
+                    breakMinutes += (int) (be.getTimeInMillis() - bs.getTimeInMillis()) / 60000;
+                }
+                minutes -= breakMinutes;
+            }
+        }
+        //end break time code
+
         int hours = minutes / 60;
         int remainder = minutes % 60;
 

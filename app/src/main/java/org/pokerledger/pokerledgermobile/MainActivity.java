@@ -367,13 +367,8 @@ public class MainActivity extends Activity {
                 connection.setConnectTimeout(10000); //set timeout to 10 seconds
                 connection.setDoOutput(true);
                 connection.connect();
-/*
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setDoOutput(true);
-                connection.connect();
-*/
-                int fileLength = connection.getContentLength(); //it might just return -1 on the emulator, not sure
+
+                int fileLength = connection.getContentLength();
 
                 // download the file
                 InputStream input = new BufferedInputStream(url.openStream());
@@ -423,8 +418,6 @@ public class MainActivity extends Activity {
     public class LoadStatistics extends AsyncTask<Void, Void, Void> {
         int totalProfit;
         double totalTime;
-
-        public LoadStatistics() {}
 
         @Override
         protected Void doInBackground(Void... params) {

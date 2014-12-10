@@ -8,20 +8,20 @@ import java.util.Calendar;
  * Created by Max on 9/12/14.
  */
 public class Session {
-    private int id;
-    private String start;
-    private String end;
-    private int buyIn;
-    private int cashOut;
-    private Structure structure;
-    private Game game;
-    private Location location;
-    private int entrants;
-    private int placed;
-    private String blinds;
-    private String note;
-    private ArrayList<Break> breaks;
-    private int state;
+    private int id = 0;
+    private String start = "";
+    private String end = "";
+    private int buyIn = 0;
+    private int cashOut = 0;
+    private Structure structure = new Structure();
+    private Game game = new Game();
+    private Location location = new Location();
+    private int entrants = 0;
+    private int placed = 0;
+    private Blinds blinds = new Blinds();
+    private String note = "";
+    private ArrayList<Break> breaks = new ArrayList<Break>();
+    private int state = 0;
 
     //constructors
     public Session() {}
@@ -99,7 +99,7 @@ public class Session {
         this.placed = p;
     }
 
-    public void setBlinds(String b) {
+    public void setBlinds(Blinds b) {
         this.blinds = b;
     }
 
@@ -156,7 +156,7 @@ public class Session {
         return this.placed;
     }
 
-    public String getBlinds() {
+    public Blinds getBlinds() {
         return this.blinds;
     }
 

@@ -4,9 +4,9 @@ package org.pokerledger.pokerledgermobile.model;
  * Created by Max on 9/12/14.
  */
 public class Break {
-    private int id;
-    private String start;
-    private String end;
+    private int id = 0;
+    private String start = "";
+    private String end = "";
 
     //constructors
     public Break() {}

@@ -51,7 +51,6 @@
             android:orientation="vertical"
             style="@style/Wrapper">
 
-
             <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/type"
                 android:layout_width="fill_parent"
@@ -75,65 +74,25 @@
             </RadioGroup>
 
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/blinds1"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
+                android:id="@+id/blind_wrapper"
+                android:orientation="horizontal"
+                style="@style/Wrapper">
 
-                <EditText
-                    android:id="@+id/small_blind"
+                <Spinner
+                    android:id="@+id/blinds"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight=".33"
-                    android:hint="@string/sb_hint"
-                    android:inputType="number" />
+                    android:layout_weight=".80"
+                    android:prompt="@string/blinds_prompt"
+                    android:textSize="10dp" />
 
-                <EditText
-                    android:id="@+id/big_blind"
+                <Button
+                    android:id="@+id/new_blind"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight=".33"
-                    android:hint="@string/bb_hint"
-                    android:inputType="number" />
-
-                <EditText
-                    android:id="@+id/straddle"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight=".33"
-                    android:hint="@string/straddle_hint"
-                    android:inputType="number" />
-            </LinearLayout>
-
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/blinds2"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" >
-
-                <EditText
-                    android:id="@+id/bring_in"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight=".33"
-                    android:hint="@string/bring_hint"
-                    android:inputType="number" />
-
-                <EditText
-                    android:id="@+id/ante"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight=".33"
-                    android:hint="@string/ante_hint"
-                    android:inputType="number" />
-
-                <EditText
-                    android:id="@+id/points"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight=".33"
-                    android:hint="@string/points_hint"
-                    android:inputType="number" />
+                    android:layout_weight=".20"
+                    android:hint="@string/new_location_hint"
+                    android:onClick="showNewBlindDialog" />
             </LinearLayout>
 
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -151,28 +110,6 @@
                     android:hint="@string/entrants_hint"
                     android:inputType="number" />
             </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/wrapper4"
-            android:orientation="horizontal"
-            style="@style/Wrapper">
-
-            <Spinner
-                android:id="@+id/location"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight=".80"
-                android:prompt="@string/location_prompt"
-                android:textSize="10dp" />
-
-            <Button
-                android:id="@+id/new_location"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight=".20"
-                android:hint="@string/new_location_hint"
-                android:onClick="showNewLocationDialog" />
         </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -197,6 +134,27 @@
                 android:onClick="showTimePickerDialog" />
         </LinearLayout>
 
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/wrapper4"
+            android:orientation="horizontal"
+            style="@style/Wrapper">
+
+            <Spinner
+                android:id="@+id/location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".80"
+                android:prompt="@string/location_prompt"
+                android:textSize="10dp" />
+
+            <Button
+                android:id="@+id/new_location"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".20"
+                android:hint="@string/new_location_hint"
+                android:onClick="showNewLocationDialog" />
+        </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/wrapper6"

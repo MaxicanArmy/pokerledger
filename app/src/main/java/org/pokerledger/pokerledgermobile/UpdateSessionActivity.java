@@ -3,7 +3,6 @@ package org.pokerledger.pokerledgermobile;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,9 +26,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Max on 9/16/14.
+ * Created by Max on 12/4/14.
  */
-public class FinishSessionActivity extends SessionActivity  {
+public class UpdateSessionActivity extends SessionActivity  {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +44,7 @@ public class FinishSessionActivity extends SessionActivity  {
             this.current = gson.fromJson(json, Session.class);
 
             ((EditText) findViewById(R.id.buy_in)).setText(Integer.toString(current.getBuyIn()));
+            ((EditText) findViewById(R.id.cash_out)).setText(Integer.toString(current.getCashOut()));
 
             if (current.getBlinds() == null) {
                 RadioButton type = (RadioButton) findViewById(R.id.radio_tourney);
@@ -52,6 +52,7 @@ public class FinishSessionActivity extends SessionActivity  {
                 this.toggleRadio(type);
 
                 ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(current.getEntrants()));
+                ((EditText) findViewById(R.id.placed)).setText(Integer.toString(current.getPlaced()));
             }
 
             String startDateTime = current.getStart();
@@ -76,13 +77,24 @@ public class FinishSessionActivity extends SessionActivity  {
                 startTimeBtn.setHint(startTime);
             }
 
-            Calendar cal = Calendar.getInstance();
-            DecimalFormat df = new DecimalFormat("00");
-            ((Button) findViewById(R.id.end_date)).setHint(cal.get(Calendar.YEAR) + "-" + df.format(cal.get(Calendar.MONTH) + 1) + "-" + df.format(cal.get(Calendar.DAY_OF_MONTH)));
-            ((Button) findViewById(R.id.end_time)).setHint(df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE)));
+            String endDateTime = current.getEnd();
 
-            if (this.current.onBreak()) {
-                current.breakEnd();
+            m = DATE_PATTERN.matcher(endDateTime);
+            Button endDateBtn = (Button) findViewById(R.id.end_date);
+            String endDate;
+
+            while (m.find()) {
+                endDate = m.group(1);
+                endDateBtn.setHint(endDate);
+            }
+
+            m = TIME_PATTERN.matcher(endDateTime);
+            Button endTimeBtn = (Button) findViewById(R.id.end_time);
+            String endTime;
+
+            while (m.find()) {
+                endTime = m.group(1);
+                endTimeBtn.setHint(endTime);
             }
 
             ((EditText) findViewById(R.id.note)).setText(current.getNote());

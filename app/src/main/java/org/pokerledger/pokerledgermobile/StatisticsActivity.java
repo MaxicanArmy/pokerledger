@@ -1,8 +1,12 @@
 package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
@@ -23,23 +27,46 @@ public class StatisticsActivity extends Activity {
         new LoadStatistics().execute();
     }
 
-    public class LoadStatistics extends AsyncTask<Void, Void, Void> {
-        int totalProfit;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-        public LoadStatistics() {}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
 
+        switch (item.getItemId()) {
+            case R.id.add_session :
+                FragmentManager manager = getFragmentManager();
+
+                AddSessionFragment dialog = new AddSessionFragment();
+                dialog.show(manager, "AddSession");
+                break;
+            case R.id.history :
+                Intent history = new Intent(this, HistoryActivity.class);
+                this.startActivity(history);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    public class LoadStatistics extends AsyncTask<Void, Void, Integer> {
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Integer doInBackground(Void... params) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
-            totalProfit = db.getProfit();
 
-            return null;
+            return db.getProfit();
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            StatisticsActivity.this.profit.setText("$" + Integer.toString(this.totalProfit));
+        protected void onPostExecute(Integer result) {
+            StatisticsActivity.this.profit.setText("$" + Integer.toString(result));
         }
     }
 }

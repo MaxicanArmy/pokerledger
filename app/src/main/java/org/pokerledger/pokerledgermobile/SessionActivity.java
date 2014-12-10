@@ -3,11 +3,14 @@ package org.pokerledger.pokerledgermobile;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.FragmentManager;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
@@ -17,8 +20,12 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TimePicker;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
+import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Game;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
@@ -35,46 +42,24 @@ import java.util.regex.Pattern;
 public class SessionActivity extends Activity {
     Session current;
     View activeView;
-    /*
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    */
     public void toggleRadio(View view) {
         // Is the button now checked?
         boolean checked = ((RadioButton) view).isChecked();
-        View blinds1 = findViewById(R.id.blinds1);
-        View blinds2 = findViewById(R.id.blinds2);
+        View blinds = findViewById(R.id.blind_wrapper);
         View tourney = findViewById(R.id.tourney);
 
         // Check which radio button was clicked
         switch(view.getId()) {
             case R.id.radio_cash:
                 if (checked) {
-                    blinds1.setVisibility(View.VISIBLE);
-                    blinds2.setVisibility(View.VISIBLE);
+                    blinds.setVisibility(View.VISIBLE);
                     tourney.setVisibility(View.GONE);
                     break;
                 }
             case R.id.radio_tourney:
                 if (checked) {
-                    blinds1.setVisibility(View.GONE);
-                    blinds2.setVisibility(View.GONE);
+                    blinds.setVisibility(View.GONE);
                     tourney.setVisibility(View.VISIBLE);
                     break;
                 }
@@ -177,7 +162,7 @@ public class SessionActivity extends Activity {
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String value = input.getText().toString();
-                new AddLocation(value).execute();
+                new AddLocation().execute(value);
             }
         });
 
@@ -191,12 +176,102 @@ public class SessionActivity extends Activity {
         dialog.show();
     }
 
+    public void showNewBlindDialog(View v) {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        LayoutInflater factory = LayoutInflater.from(this);
+        final View blindEntryView = factory.inflate(R.layout.add_blinds_fragment, null);
+        alert.setView(blindEntryView);
+
+        alert.setTitle("Add Blinds");
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String sbText = ((EditText) blindEntryView.getRootView().findViewById(R.id.small_blind)).getText().toString();
+                String bbText = ((EditText) blindEntryView.getRootView().findViewById(R.id.big_blind)).getText().toString();
+                String strText = ((EditText) blindEntryView.getRootView().findViewById(R.id.straddle)).getText().toString();
+                String biText = ((EditText) blindEntryView.getRootView().findViewById(R.id.bring_in)).getText().toString();
+                String anteText = ((EditText) blindEntryView.getRootView().findViewById(R.id.ante)).getText().toString();
+                String ppText = ((EditText) blindEntryView.getRootView().findViewById(R.id.points)).getText().toString();
+
+                int sb = 0, bb = 0, straddle = 0, bringIn = 0, ante = 0, perPoint = 0;
+
+                if (!sbText.equals("")) {
+                    sb = Integer.parseInt(sbText);
+                }
+                if (!bbText.equals("")) {
+                    bb = Integer.parseInt(bbText);
+                }
+                if (!strText.equals("")) {
+                    straddle = Integer.parseInt(strText);
+                }
+                if (!biText.equals("")) {
+                    bringIn = Integer.parseInt(biText);
+                }
+                if (!anteText.equals("")) {
+                    ante = Integer.parseInt(anteText);
+                }
+                if (!ppText.equals("")) {
+                    perPoint = Integer.parseInt(ppText);
+                }
+
+                new AddBlinds().execute(new Blinds(sb, bb, straddle, bringIn, ante, perPoint));
+            }
+        });
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+            }
+        });
+
+        AlertDialog dialog = alert.create();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        dialog.show();
+    }
+
+    public void showBreaksDialog(View v) {
+        if (current.getBreaks() == null) {
+            Toast.makeText(this, "There are no breaks associated with this session.", Toast.LENGTH_LONG).show();
+        }
+        else {
+            FragmentManager manager = getFragmentManager();
+            Gson gson = new Gson();
+
+            Bundle b = new Bundle();
+            b.putString("SESSION_JSON", gson.toJson(current));
+
+            ViewBreaksFragment dialog = new ViewBreaksFragment();
+            dialog.setArguments(b);
+            dialog.show(manager, "ViewBreaks");
+        }
+    }
+
+    public void showAddBreakDialog(View v) {
+        String startDate = ((Button) this.findViewById(R.id.start_date)).getHint().toString();
+        String startTime = ((Button) this.findViewById(R.id.start_time)).getHint().toString();
+        String endDate = ((Button) this.findViewById(R.id.end_date)).getHint().toString();
+        String endTime = ((Button) this.findViewById(R.id.end_time)).getHint().toString();
+
+        if (this.current == null) {
+            this.current = new Session();
+        }
+
+        if (startDate.equals("Start Date") || startTime.equals("Start Time") || endDate.equals("End Date") || endTime.equals("End Time")) {
+            Toast.makeText(this, "Set start/end date/time before adding breaks.", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            this.current.setStart(startDate + " " + startTime);
+            this.current.setEnd(endDate + " " + endTime);
+            FragmentManager manager = getFragmentManager();
+            AddBreakFragment dialog = new AddBreakFragment();
+            dialog.show(manager, "AddBreak");
+        }
+    }
+
     public class InitializeData extends AsyncTask<Void, Void, Void> {
         ArrayList<Structure> structures = new ArrayList<Structure>();
         ArrayList<Game> games = new ArrayList<Game>();
         ArrayList<Location> locations = new ArrayList <Location>();
-
-        public InitializeData() {}
+        ArrayList<Blinds> blinds = new ArrayList <Blinds>();
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -205,61 +280,86 @@ public class SessionActivity extends Activity {
             structures = db.getAllStructures();
             games = db.getAllGames();
             locations = db.getAllLocations();
+            blinds = db.getAllBlinds();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
             Spinner locationSpinner = (Spinner) findViewById(R.id.location);
+            Spinner gameSpinner = (Spinner) findViewById(R.id.game);
+            Spinner structureSpinner = (Spinner) findViewById(R.id.structure);
+            Spinner blindsSpinner = (Spinner) findViewById(R.id.blinds);
+
             ArrayAdapter locationAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, locations);
             locationAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             locationSpinner.setAdapter(locationAdapter);
 
-            Spinner gameSpinner = (Spinner) findViewById(R.id.game);
             ArrayAdapter gameAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, games);
             gameAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             gameSpinner.setAdapter(gameAdapter);
 
-            Spinner structureSpinner = (Spinner) findViewById(R.id.structure);
             ArrayAdapter structureAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, structures);
             structureAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             structureSpinner.setAdapter(structureAdapter);
 
+            ArrayAdapter blindsAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, blinds);
+            blindsAdapter.setDropDownViewResource(R.layout.spinner_item_view);
+            blindsSpinner.setAdapter(blindsAdapter);
 
             if (current != null) {
                 locationSpinner.setSelection(current.getLocation().getId() - 1);
                 gameSpinner.setSelection(current.getGame().getId() - 1);
                 structureSpinner.setSelection(current.getStructure().getId() - 1);
+
+                if (current.getBlinds().getId() != 0) {
+                    ((Spinner) findViewById(R.id.blinds)).setSelection(current.getBlinds().getId() - 1);
+                }
             }
         }
     }
 
-    public class AddLocation extends AsyncTask<Void, Void, Void> {
-        private String location;
-        ArrayList<Location> locations = new ArrayList <Location>();
-
-        public AddLocation(String name) {
-            this.location = name;
-        }
-
+    public class AddLocation extends AsyncTask<String, Void, ArrayList<Location>> {
         @Override
-        protected Void doInBackground(Void... params) {
+        protected ArrayList<Location> doInBackground(String... name) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
 
-            db.addLocation(location);
+            db.addLocation(name[0]);
 
-            locations = db.getAllLocations();
-            return null;
+            return db.getAllLocations();
         }
 
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(ArrayList<Location> result) {
             Spinner locationSpinner = (Spinner) findViewById(R.id.location);
-            ArrayAdapter locAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, locations);
+            ArrayAdapter locAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, result);
+            locAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             locationSpinner.setAdapter(locAdapter);
 
-            locationSpinner.setSelection(locations.size() - 1);
+            locationSpinner.setSelection(result.size() - 1);
+        }
+    }
+
+    public class AddBlinds extends AsyncTask<Blinds, Void, ArrayList<Blinds>> {
+        @Override
+        protected ArrayList<Blinds> doInBackground(Blinds... set) {
+            DatabaseHelper db;
+            db = new DatabaseHelper(getApplicationContext());
+
+            db.addBlinds(set[0]);
+
+            return db.getAllBlinds();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Blinds> result) {
+            Spinner blindSpinner = (Spinner) findViewById(R.id.blinds);
+            ArrayAdapter blindAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, result);
+            blindAdapter.setDropDownViewResource(R.layout.spinner_item_view);
+            blindSpinner.setAdapter(blindAdapter);
+
+            blindSpinner.setSelection(result.size() - 1);
         }
     }
 

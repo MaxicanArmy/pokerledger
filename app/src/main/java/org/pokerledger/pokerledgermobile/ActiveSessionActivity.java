@@ -1,8 +1,11 @@
 package org.pokerledger.pokerledgermobile;
 
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +16,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
+import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Game;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
@@ -28,7 +32,36 @@ public class ActiveSessionActivity extends SessionActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_active_session);
 
+        //RETRIEVE STRUCTURES, GAMES, AND LOCATIONS FROM DB AND LOAD VALUES IN TO THE SPINNERS
         new InitializeData().execute();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch (item.getItemId()) {
+            case R.id.add_session :
+                FragmentManager manager = getFragmentManager();
+
+                AddSessionFragment dialog = new AddSessionFragment();
+                dialog.show(manager, "AddSession");
+                break;
+            case R.id.history :
+                Intent history = new Intent(this, HistoryActivity.class);
+                this.startActivity(history);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public void saveActiveSession(View v) {
@@ -48,6 +81,9 @@ public class ActiveSessionActivity extends SessionActivity {
         RadioButton tourneyRadio = (RadioButton) findViewById(R.id.radio_tourney);
 
         if (tourneyRadio.isChecked()) {
+            //next line is required to ensure that the database helper knows for what kind of session to generate queries (in case the user changed the session type)
+            session.setBlinds(null);
+
             String entrantsText = ((EditText) findViewById(R.id.entrants)).getText().toString();
 
             if (!entrantsText.equals("")) {
@@ -55,35 +91,20 @@ public class ActiveSessionActivity extends SessionActivity {
             }
         }
         else {
-            String sbText = ((EditText) findViewById(R.id.small_blind)).getText().toString();
-            String bbText = ((EditText) findViewById(R.id.big_blind)).getText().toString();
-            String straddleText = ((EditText) findViewById(R.id.straddle)).getText().toString();
-            String bringInText = ((EditText) findViewById(R.id.bring_in)).getText().toString();
-            String anteText = ((EditText) findViewById(R.id.ante)).getText().toString();
-            String pointsText = ((EditText) findViewById(R.id.points)).getText().toString();
+            Spinner blinds = (Spinner) findViewById(R.id.blinds);
 
-            if (sbText.equals("") && !bbText.equals("")) {
-                Toast.makeText(this, "If there is only one blind enter it in SB field.", Toast.LENGTH_SHORT).show();
-                this.setContentView(findViewById(R.id.small_blind));
-                findViewById(R.id.small_blind).requestFocus();
+            if (blinds.getSelectedItem() != null) {
+                session.setBlinds((Blinds) blinds.getSelectedItem());
+            } else {
+                Toast.makeText(this, "You must enter the blinds.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            if (sbText.equals("") && bbText.equals("") && straddleText.equals("") && bringInText.equals("") && anteText.equals("") && pointsText.equals("")) {
-                Toast.makeText(this, "At least one blind must be entered for cash sessions.", Toast.LENGTH_SHORT).show();
-                findViewById(R.id.small_blind).requestFocus();
-                return;
-            }
-
-            String blinds = sbText + "SB" + bbText + "BB" + straddleText + "S" + bringInText + "B" + anteText + "A" + pointsText + "P";
-            session.setBlinds(blinds);
         }
 
         String startDate = ((Button) findViewById(R.id.start_date)).getHint().toString();
 
         if (startDate.equals("Start Date")) {
             Toast.makeText(this, "Select a start date for this session.", Toast.LENGTH_SHORT).show();
-            //((Button) findViewById(R.id.start_date)).focus
             return;
         }
 

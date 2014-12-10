@@ -4,8 +4,8 @@ package org.pokerledger.pokerledgermobile.model;
  * Created by Max on 9/12/14.
  */
 public class Location {
-    private int id;
-    private String location;
+    private int id = 0;
+    private String location = "";
 
     //constructors
     public Location() {}

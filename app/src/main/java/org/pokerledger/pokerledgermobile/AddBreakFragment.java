@@ -55,8 +55,7 @@ public class AddBreakFragment extends DialogFragment {
         Button addBreak = (Button) view.findViewById(R.id.add_break);
         addBreak.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                FinishSessionActivity a = (FinishSessionActivity) getActivity();
-                //NEED TO REWRITE THIS ALL TO STRING COMPARISONS
+                SessionActivity a = (SessionActivity) getActivity();
 
                 String startDate = ((Button) getView().findViewById(R.id.break_start_date)).getHint().toString();
                 String endDate = ((Button) getView().findViewById(R.id.break_end_date)).getHint().toString();
@@ -83,11 +82,16 @@ public class AddBreakFragment extends DialogFragment {
                 //4. Any part of the break overlaps with another break
                 else {
                     ArrayList<Break> ba = a.current.getBreaks();
-                    if (!ba.isEmpty()) {
-                        for (Break b : ba) {
-                            if ((start.compareTo(b.getEnd()) < 0) && (end.compareTo(b.getStart()) > 0)) {
-                                Toast.makeText(a, "The break cannot overlap with another break in this session.", Toast.LENGTH_SHORT).show();
-                                return;
+                    if (ba == null) {
+                        ba = new ArrayList<Break>();
+                    }
+                    else {
+                        if (!ba.isEmpty()) {
+                            for (Break b : ba) {
+                                if ((start.compareTo(b.getEnd()) < 0) && (end.compareTo(b.getStart()) > 0)) {
+                                    Toast.makeText(a, "The break cannot overlap with another break in this session.", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
                             }
                         }
                     }
