@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * Created by Max on 9/17/14.
  */
 public class SessionActivity extends Activity {
-    Session current;
+    Session current = new Session();
     View activeView;
 
     public void toggleRadio(View view) {
@@ -195,6 +195,21 @@ public class SessionActivity extends Activity {
 
                 int sb = 0, bb = 0, straddle = 0, bringIn = 0, ante = 0, perPoint = 0;
 
+                if (!bbText.equals("") && sbText.equals("")) {
+                    Toast.makeText(getApplicationContext(), "Blinds not added. If there is only one blind enter it in SB.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (!ppText.equals("") && (!sbText.equals("") || !bbText.equals("") || !strText.equals("") || !biText.equals("") || !anteText.equals(""))) {
+                    Toast.makeText(getApplicationContext(), "Blinds not added. You cannot enter other blinds when using points.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (!strText.equals("") && (sbText.equals("") || bbText.equals(""))) {
+                    Toast.makeText(getApplicationContext(), "Blinds not added. You must enter a SB and BB to enter a straddle.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 if (!sbText.equals("")) {
                     sb = Integer.parseInt(sbText);
                 }
@@ -251,10 +266,6 @@ public class SessionActivity extends Activity {
         String endDate = ((Button) this.findViewById(R.id.end_date)).getHint().toString();
         String endTime = ((Button) this.findViewById(R.id.end_time)).getHint().toString();
 
-        if (this.current == null) {
-            this.current = new Session();
-        }
-
         if (startDate.equals("Start Date") || startTime.equals("Start Time") || endDate.equals("End Date") || endTime.equals("End Time")) {
             Toast.makeText(this, "Set start/end date/time before adding breaks.", Toast.LENGTH_SHORT).show();
         }
@@ -307,13 +318,22 @@ public class SessionActivity extends Activity {
             blindsAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             blindsSpinner.setAdapter(blindsAdapter);
 
-            if (current != null) {
+            if (current.getId() != 0) {
                 locationSpinner.setSelection(current.getLocation().getId() - 1);
                 gameSpinner.setSelection(current.getGame().getId() - 1);
                 structureSpinner.setSelection(current.getStructure().getId() - 1);
 
                 if (current.getBlinds().getId() != 0) {
-                    ((Spinner) findViewById(R.id.blinds)).setSelection(current.getBlinds().getId() - 1);
+                    int count = 0;
+                    int SpinnerPos = -1;
+                    while (SpinnerPos == -1 && count < blinds.size()) {
+                        if (current.getBlinds().getId() == blinds.get(count).getId()) {
+                            SpinnerPos = count;
+                        }
+                        count++;
+                    }
+
+                    blindsSpinner.setSelection(SpinnerPos);
                 }
             }
         }
@@ -341,25 +361,37 @@ public class SessionActivity extends Activity {
         }
     }
 
-    public class AddBlinds extends AsyncTask<Blinds, Void, ArrayList<Blinds>> {
+    public class AddBlinds extends AsyncTask<Blinds, Void, Blinds> {
+        ArrayList<Blinds> allBlinds = new ArrayList<Blinds>();
+
         @Override
-        protected ArrayList<Blinds> doInBackground(Blinds... set) {
+        protected Blinds doInBackground(Blinds... set) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
 
-            db.addBlinds(set[0]);
+            Blinds newSet = db.addBlinds(set[0]);
+            allBlinds = db.getAllBlinds();
 
-            return db.getAllBlinds();
+            return newSet;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Blinds> result) {
+        protected void onPostExecute(Blinds result) {
             Spinner blindSpinner = (Spinner) findViewById(R.id.blinds);
-            ArrayAdapter blindAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, result);
+            ArrayAdapter blindAdapter = new ArrayAdapter(SessionActivity.this, android.R.layout.simple_spinner_item, allBlinds);
             blindAdapter.setDropDownViewResource(R.layout.spinner_item_view);
             blindSpinner.setAdapter(blindAdapter);
 
-            blindSpinner.setSelection(result.size() - 1);
+            int count = 0;
+            int SpinnerPos = -1;
+            while (SpinnerPos == -1 && count < allBlinds.size()) {
+                if (result.getId() == allBlinds.get(count).getId()) {
+                    SpinnerPos = count;
+                }
+                count++;
+            }
+
+            blindSpinner.setSelection(SpinnerPos);
         }
     }
 

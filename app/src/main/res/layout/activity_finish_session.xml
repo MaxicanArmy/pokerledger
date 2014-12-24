@@ -85,7 +85,8 @@
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/blind_wrapper"
                 android:orientation="horizontal"
-                style="@style/Wrapper">
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
 
                 <Spinner
                     android:id="@+id/blinds"

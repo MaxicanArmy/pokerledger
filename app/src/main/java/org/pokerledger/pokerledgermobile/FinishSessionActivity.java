@@ -44,17 +44,17 @@ public class FinishSessionActivity extends SessionActivity  {
             Gson gson = new Gson();
             this.current = gson.fromJson(json, Session.class);
 
-            ((EditText) findViewById(R.id.buy_in)).setText(Integer.toString(current.getBuyIn()));
+            ((EditText) findViewById(R.id.buy_in)).setText(Integer.toString(this.current.getBuyIn()));
 
-            if (current.getBlinds() == null) {
+            if (this.current.getBlinds().toString().equals("")) {
                 RadioButton type = (RadioButton) findViewById(R.id.radio_tourney);
                 type.toggle();
                 this.toggleRadio(type);
 
-                ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(current.getEntrants()));
+                ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(this.current.getEntrants()));
             }
 
-            String startDateTime = current.getStart();
+            String startDateTime = this.current.getStart();
 
             Pattern DATE_PATTERN = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2})");
             Matcher m = DATE_PATTERN.matcher(startDateTime);
@@ -82,10 +82,10 @@ public class FinishSessionActivity extends SessionActivity  {
             ((Button) findViewById(R.id.end_time)).setHint(df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE)));
 
             if (this.current.onBreak()) {
-                current.breakEnd();
+                this.current.breakEnd();
             }
 
-            ((EditText) findViewById(R.id.note)).setText(current.getNote());
+            ((EditText) findViewById(R.id.note)).setText(this.current.getNote());
         }
     }
 
@@ -118,10 +118,6 @@ public class FinishSessionActivity extends SessionActivity  {
     }
 
     public void saveFinishedSession(View v) {
-        if (this.current == null) {
-            this.current = new Session();
-        }
-
         String buyinText = ((EditText) findViewById(R.id.buy_in)).getText().toString();
 
         if (buyinText.equals("")) {

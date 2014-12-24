@@ -312,7 +312,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public ArrayList<Blinds> getAllBlinds() {
         ArrayList<Blinds> blinds = new ArrayList<Blinds>();
-        String query = "SELECT * FROM " + TABLE_BLINDS;
+
+        String query = "SELECT * FROM " + TABLE_BLINDS + " ORDER BY " + KEY_PER_POINT + " ASC," + KEY_BIG_BLIND + " ASC, " + KEY_SMALL_BLIND + " ASC, " +
+                KEY_STRADDLE + " ASC, " + KEY_ANTE + " ASC, " + KEY_BRING_IN + " ASC;";
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
@@ -352,35 +354,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_BLINDS +
                 " ON " + TABLE_CASH + "." + KEY_BLINDS + "=" + TABLE_BLINDS + "." + KEY_BLIND_ID + " WHERE " + KEY_STATE + "=" + state + " ORDER BY " +
                 KEY_START + " DESC;";
-        /*
-        String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " + TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " +
-                TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " + TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_BLINDS + "." + KEY_BLIND_ID + ", " +
-                TABLE_BLINDS + "." + KEY_SMALL_BLIND + ", " + TABLE_BLINDS + "." + KEY_BIG_BLIND + ", " + TABLE_BLINDS + "." + KEY_STRADDLE + ", " +
-                TABLE_BLINDS + "." + KEY_BRING_IN + ", " + TABLE_BLINDS + "." + KEY_ANTE + ", " + TABLE_BLINDS + "." + KEY_PER_POINT + ", " +
-                TABLE_TOURNAMENT + "." + KEY_ENTRANTS + ", " + KEY_NOTE + " FROM " + TABLE_SESSION + " INNER JOIN " + TABLE_STRUCTURE +
-                " ON " + TABLE_SESSION + "." + KEY_STRUCTURE + "=" + KEY_STRUCTURE_ID + " INNER JOIN " + TABLE_GAME +
-                " ON " + TABLE_SESSION + "." + KEY_GAME + "=" + KEY_GAME_ID +" INNER JOIN " + TABLE_LOCATION +
-                " ON " + TABLE_SESSION + "." + KEY_LOCATION + "=" + KEY_LOCATION_ID + " LEFT JOIN " + TABLE_NOTE +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_NOTE + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_TOURNAMENT +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_TOURNAMENT + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_CASH +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + "LEFT JOIN " + TABLE_BLINDS +
-                " ON " + TABLE_CASH + "." + KEY_BLINDS + "=" + TABLE_BLINDS + "." + KEY_BLIND_ID + " WHERE " + KEY_STATE + "=" + state + " ORDER BY " +
-                KEY_START + " DESC;";
 
-
-                String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " + TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " +
-                TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " + TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_CASH + "." + KEY_BLINDS + ", " +
-                TABLE_TOURNAMENT + "." + KEY_ENTRANTS + ", " + KEY_NOTE + " FROM " + TABLE_SESSION + " INNER JOIN " + TABLE_STRUCTURE +
-                " ON " + TABLE_SESSION + "." + KEY_STRUCTURE + "=" + KEY_STRUCTURE_ID + " INNER JOIN " + TABLE_GAME +
-                " ON " + TABLE_SESSION + "." + KEY_GAME + "=" + KEY_GAME_ID +" INNER JOIN " + TABLE_LOCATION +
-                " ON " + TABLE_SESSION + "." + KEY_LOCATION + "=" + KEY_LOCATION_ID + " LEFT JOIN " + TABLE_NOTE +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_NOTE + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_TOURNAMENT +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_TOURNAMENT + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_CASH +
-                " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " WHERE " + KEY_STATE + "=" + state + " ORDER BY " +
-                KEY_START + " DESC;";
-         */
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
 
@@ -402,6 +376,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     s.setBlinds(new Blinds(c.getInt(c.getColumnIndex(KEY_BLIND_ID)), c.getInt(c.getColumnIndex(KEY_SMALL_BLIND)), c.getInt(c.getColumnIndex(KEY_BIG_BLIND)),
                             c.getInt(c.getColumnIndex(KEY_STRADDLE)), c.getInt(c.getColumnIndex(KEY_BRING_IN)), c.getInt(c.getColumnIndex(KEY_ANTE)),
                             c.getInt(c.getColumnIndex(KEY_PER_POINT))));
+                }
+                else {
+                    s.setBlinds(null);
                 }
 
                 if (!c.isNull(c.getColumnIndex(KEY_ENTRANTS))) {
@@ -573,14 +550,39 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void addBlinds(Blinds blindSet) {
+    public Blinds addBlinds(Blinds blindSet) {
+        Blinds returnValue = blindSet;
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "INSERT INTO " + TABLE_BLINDS + " (" + KEY_SMALL_BLIND + ", " + KEY_BIG_BLIND + ", " + KEY_STRADDLE + ", " + KEY_BRING_IN + ", " +
-                KEY_ANTE + ", " + KEY_PER_POINT + ") VALUES (" + blindSet.getSB() + ", " + blindSet.getBB() + ", " + blindSet.getStraddle() + ", " + blindSet.getBringIn() + ", " +
-                blindSet.getAnte() + ", " + blindSet.getPerPoint() + ");";
-        db.execSQL(query);
-        db.close();
+        String duplicateCheckQuery = "SELECT * FROM " + TABLE_BLINDS + " WHERE " + KEY_SMALL_BLIND + "=" + blindSet.getSB() + " AND " +
+                KEY_BIG_BLIND + "=" + blindSet.getBB() + " AND " + KEY_STRADDLE + "=" + blindSet.getStraddle() + " AND " +
+                KEY_BRING_IN + "=" + blindSet.getBringIn() + " AND " + KEY_ANTE + "=" + blindSet.getAnte() + " AND " +
+                KEY_PER_POINT + "=" + blindSet.getPerPoint() + ";";
+
+        Cursor c = db.rawQuery(duplicateCheckQuery, null);
+
+        if (c.moveToFirst()) {
+            //this creates a blind object that will match an object in the spinner
+            returnValue.setId(c.getInt(c.getColumnIndex(KEY_BLIND_ID)));
+        }
+        else {
+            ContentValues blindValues = new ContentValues();
+            blindValues.put(KEY_SMALL_BLIND, blindSet.getSB());
+            blindValues.put(KEY_BIG_BLIND, blindSet.getBB());
+            blindValues.put(KEY_STRADDLE, blindSet.getStraddle());
+            blindValues.put(KEY_BRING_IN, blindSet.getBringIn());
+            blindValues.put(KEY_ANTE, blindSet.getAnte());
+            blindValues.put(KEY_PER_POINT, blindSet.getPerPoint());
+
+            long blind_id = db.insert(TABLE_BLINDS, null, blindValues);
+
+            if (blind_id != -1) {
+                returnValue.setId((int) blind_id);
+            }
+            db.close();
+        }
+
+        return returnValue;
     }
 
     public int getProfit() {

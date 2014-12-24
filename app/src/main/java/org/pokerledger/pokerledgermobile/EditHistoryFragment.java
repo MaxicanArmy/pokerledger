@@ -26,7 +26,7 @@ import java.util.ArrayList;
  */
 public class EditHistoryFragment extends DialogFragment implements AdapterView.OnItemClickListener {
     HistoryActivity activity;
-    private Session current;
+    private Session active;
     private ArrayList<String> options = new ArrayList<String>();
     private ListView list;
 
@@ -44,7 +44,7 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
 
         if (getArguments().getString("SESSION_JSON") != null) {
             Gson gson = new Gson();
-            this.current = gson.fromJson(getArguments().getString("SESSION_JSON"), Session.class);
+            this.active = gson.fromJson(getArguments().getString("SESSION_JSON"), Session.class);
 
             options.add("Edit Session");
             options.add("Delete Session");
@@ -61,8 +61,6 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
         dismiss();
 
         if (position == 0) {
-            //insert code to view/edit finished sessions
-
             Intent intent = new Intent(this.activity, UpdateSessionActivity.class);
             intent.putExtra("SESSION_JSON", getArguments().getString("SESSION_JSON"));
             this.activity.startActivityForResult(intent, 2);
@@ -87,14 +85,10 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
     }
 
     public class DeleteFinished extends AsyncTask<Void, Void, Void> {
-
-        public DeleteFinished() {
-        }
-
         @Override
         protected Void doInBackground(Void... params) {
             DatabaseHelper db = new DatabaseHelper(EditHistoryFragment.this.activity);
-            db.deleteSession(EditHistoryFragment.this.current.getId());
+            db.deleteSession(EditHistoryFragment.this.active.getId());
 
             return null;
         }

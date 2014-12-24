@@ -21,7 +21,7 @@ public class SessionListAdapter extends ArrayAdapter<Session>{
     public SessionListAdapter(Activity context, ArrayList<Session> active) {
         super(context, R.layout.list_session, active);
         this.context = context;
-        this.active= active;
+        this.active = active;
     }
 
     @Override

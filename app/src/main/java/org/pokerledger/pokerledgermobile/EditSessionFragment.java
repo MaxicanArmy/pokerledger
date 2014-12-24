@@ -89,7 +89,7 @@ public class EditSessionFragment extends DialogFragment implements AdapterView.O
             alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     int value = Integer.parseInt(input.getText().toString());
-                    new RebuyAddon(value).execute();
+                    new RebuyAddon().execute(value);
                 }
             });
 
@@ -127,9 +127,6 @@ public class EditSessionFragment extends DialogFragment implements AdapterView.O
     }
 
     public class ToggleBreak extends AsyncTask<Void, Void, Void> {
-
-        public ToggleBreak() {}
-
         @Override
         protected Void doInBackground(Void... params) {
             DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.getActivity());
@@ -145,10 +142,6 @@ public class EditSessionFragment extends DialogFragment implements AdapterView.O
     }
 
     public class DeleteActive extends AsyncTask<Void, Void, Void> {
-
-        public DeleteActive() {
-        }
-
         @Override
         protected Void doInBackground(Void... params) {
             DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.activity);
@@ -163,17 +156,11 @@ public class EditSessionFragment extends DialogFragment implements AdapterView.O
         }
     }
 
-    public class RebuyAddon extends AsyncTask<Void, Void, Void> {
-        int amount;
-
-        public RebuyAddon(int a) {
-            this.amount = a;
-        }
-
+    public class RebuyAddon extends AsyncTask<Integer, Void, Void> {
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(Integer... amount) {
             DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.activity);
-            db.rebuyAddon(EditSessionFragment.this.current.getId(), this.amount);
+            db.rebuyAddon(EditSessionFragment.this.current.getId(), amount[0]);
 
             return null;
         }

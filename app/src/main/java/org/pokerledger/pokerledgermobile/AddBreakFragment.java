@@ -17,7 +17,6 @@ import java.util.ArrayList;
  * Created by Max on 9/26/14.
  */
 public class AddBreakFragment extends DialogFragment {
-    View activeView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,16 +81,11 @@ public class AddBreakFragment extends DialogFragment {
                 //4. Any part of the break overlaps with another break
                 else {
                     ArrayList<Break> ba = a.current.getBreaks();
-                    if (ba == null) {
-                        ba = new ArrayList<Break>();
-                    }
-                    else {
-                        if (!ba.isEmpty()) {
-                            for (Break b : ba) {
-                                if ((start.compareTo(b.getEnd()) < 0) && (end.compareTo(b.getStart()) > 0)) {
-                                    Toast.makeText(a, "The break cannot overlap with another break in this session.", Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
+                    if (!ba.isEmpty()) {
+                        for (Break b : ba) {
+                            if ((start.compareTo(b.getEnd()) < 0) && (end.compareTo(b.getStart()) > 0)) {
+                                Toast.makeText(a, "The break cannot overlap with another break in this session.", Toast.LENGTH_SHORT).show();
+                                return;
                             }
                         }
                     }

@@ -43,19 +43,19 @@ public class UpdateSessionActivity extends SessionActivity  {
             Gson gson = new Gson();
             this.current = gson.fromJson(json, Session.class);
 
-            ((EditText) findViewById(R.id.buy_in)).setText(Integer.toString(current.getBuyIn()));
-            ((EditText) findViewById(R.id.cash_out)).setText(Integer.toString(current.getCashOut()));
+            ((EditText) findViewById(R.id.buy_in)).setText(Integer.toString(this.current.getBuyIn()));
+            ((EditText) findViewById(R.id.cash_out)).setText(Integer.toString(this.current.getCashOut()));
 
-            if (current.getBlinds() == null) {
+            if (this.current.getBlinds().toString().equals("")) {
                 RadioButton type = (RadioButton) findViewById(R.id.radio_tourney);
                 type.toggle();
                 this.toggleRadio(type);
 
-                ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(current.getEntrants()));
-                ((EditText) findViewById(R.id.placed)).setText(Integer.toString(current.getPlaced()));
+                ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(this.current.getEntrants()));
+                ((EditText) findViewById(R.id.placed)).setText(Integer.toString(this.current.getPlaced()));
             }
 
-            String startDateTime = current.getStart();
+            String startDateTime = this.current.getStart();
 
             Pattern DATE_PATTERN = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2})");
             Matcher m = DATE_PATTERN.matcher(startDateTime);
@@ -77,7 +77,7 @@ public class UpdateSessionActivity extends SessionActivity  {
                 startTimeBtn.setHint(startTime);
             }
 
-            String endDateTime = current.getEnd();
+            String endDateTime = this.current.getEnd();
 
             m = DATE_PATTERN.matcher(endDateTime);
             Button endDateBtn = (Button) findViewById(R.id.end_date);
@@ -97,7 +97,7 @@ public class UpdateSessionActivity extends SessionActivity  {
                 endTimeBtn.setHint(endTime);
             }
 
-            ((EditText) findViewById(R.id.note)).setText(current.getNote());
+            ((EditText) findViewById(R.id.note)).setText(this.current.getNote());
         }
     }
 
