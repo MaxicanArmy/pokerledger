@@ -632,7 +632,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         total = 0;
         String breakQuery = "SELECT * FROM " + TABLE_BREAK + " WHERE EXISTS (SELECT " + KEY_SESSION_ID + " FROM " + TABLE_SESSION + " WHERE " + KEY_STATE + "=0);";
-        Log.v("query", breakQuery);
         Cursor bc = db.rawQuery(breakQuery, null);
 
         if (bc.moveToFirst()) {

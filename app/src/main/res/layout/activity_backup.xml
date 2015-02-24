@@ -1,12 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-<!--
-Login/register radio
-Login will show username/password
-Register will show username/password/confirm password
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#77000000">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/Wrapper">
+        <!--
+        Login/register radio
+        Login will show username/password
+        Register will show username/password/confirm password
 
-Backup database Button
--->
-</LinearLayout>
+        Backup database Button & restore button
+        -->
+
+        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/type"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/radio_login"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".50"
+                android:text="@string/login_radio_text"
+                android:checked="true"
+                android:onClick="toggleLoginRegister"/>
+
+            <RadioButton android:id="@+id/radio_register"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".50"
+                android:text="@string/register_radio_text"
+                android:onClick="toggleLoginRegister"/>
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/username"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/username_hint"
+            android:textColor="#000" />
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/password_hint"
+            android:textColor="#000"
+            android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/confirm"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/confirm_hint"
+            android:textColor="#000"
+            android:inputType="textPassword"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/backup"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/backup_db_hint"
+            android:onClick="backupDatabase" />
+
+        <Button
+            android:id="@+id/restore"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/restore_db_hint"
+            android:onClick="restoreDatabase" />
+    </LinearLayout>
+</ScrollView>

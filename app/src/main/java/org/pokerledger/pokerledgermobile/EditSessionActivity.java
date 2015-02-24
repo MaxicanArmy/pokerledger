@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Max on 12/4/14.
  */
-public class UpdateSessionActivity extends SessionActivity  {
+public class EditSessionActivity extends SessionActivity  {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

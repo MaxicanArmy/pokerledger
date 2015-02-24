@@ -24,7 +24,7 @@ import java.util.ArrayList;
 /**
  * Created by Max on 11/3/14.
  */
-public class EditHistoryFragment extends DialogFragment implements AdapterView.OnItemClickListener {
+public class EditFinishedSessionFragment extends DialogFragment implements AdapterView.OnItemClickListener {
     HistoryActivity activity;
     private Session active;
     private ArrayList<String> options = new ArrayList<String>();
@@ -61,7 +61,7 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
         dismiss();
 
         if (position == 0) {
-            Intent intent = new Intent(this.activity, UpdateSessionActivity.class);
+            Intent intent = new Intent(this.activity, EditSessionActivity.class);
             intent.putExtra("SESSION_JSON", getArguments().getString("SESSION_JSON"));
             this.activity.startActivityForResult(intent, 2);
         }
@@ -87,15 +87,15 @@ public class EditHistoryFragment extends DialogFragment implements AdapterView.O
     public class DeleteFinished extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            DatabaseHelper db = new DatabaseHelper(EditHistoryFragment.this.activity);
-            db.deleteSession(EditHistoryFragment.this.active.getId());
+            DatabaseHelper db = new DatabaseHelper(EditFinishedSessionFragment.this.activity);
+            db.deleteSession(EditFinishedSessionFragment.this.active.getId());
 
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            EditHistoryFragment.this.activity.notifyListChange();
+            EditFinishedSessionFragment.this.activity.notifyListChange();
         }
     }
 }

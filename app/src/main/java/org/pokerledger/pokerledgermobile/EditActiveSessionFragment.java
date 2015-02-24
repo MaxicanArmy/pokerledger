@@ -2,10 +2,8 @@ package org.pokerledger.pokerledgermobile;
 
 import android.app.AlertDialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
@@ -29,7 +27,7 @@ import java.util.ArrayList;
 /**
  * Created by Max on 9/22/14.
  */
-public class EditSessionFragment extends DialogFragment implements AdapterView.OnItemClickListener {
+public class EditActiveSessionFragment extends DialogFragment implements AdapterView.OnItemClickListener {
     MainActivity activity;
     private Session current;
     private ArrayList<String> options = new ArrayList<String>();
@@ -129,45 +127,45 @@ public class EditSessionFragment extends DialogFragment implements AdapterView.O
     public class ToggleBreak extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.getActivity());
-            db.toggleBreak(EditSessionFragment.this.current.getId());
+            DatabaseHelper db = new DatabaseHelper(EditActiveSessionFragment.this.getActivity());
+            db.toggleBreak(EditActiveSessionFragment.this.current.getId());
 
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            EditSessionFragment.this.activity.notifyListChange();
+            EditActiveSessionFragment.this.activity.notifyListChange();
         }
     }
 
     public class DeleteActive extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.activity);
-            db.deleteSession(EditSessionFragment.this.current.getId());
+            DatabaseHelper db = new DatabaseHelper(EditActiveSessionFragment.this.activity);
+            db.deleteSession(EditActiveSessionFragment.this.current.getId());
 
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            EditSessionFragment.this.activity.notifyListChange();
+            EditActiveSessionFragment.this.activity.notifyListChange();
         }
     }
 
     public class RebuyAddon extends AsyncTask<Integer, Void, Void> {
         @Override
         protected Void doInBackground(Integer... amount) {
-            DatabaseHelper db = new DatabaseHelper(EditSessionFragment.this.activity);
-            db.rebuyAddon(EditSessionFragment.this.current.getId(), amount[0]);
+            DatabaseHelper db = new DatabaseHelper(EditActiveSessionFragment.this.activity);
+            db.rebuyAddon(EditActiveSessionFragment.this.current.getId(), amount[0]);
 
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            EditSessionFragment.this.activity.notifyListChange();
+            EditActiveSessionFragment.this.activity.notifyListChange();
         }
     }
 }

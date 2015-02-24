@@ -39,8 +39,15 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         TextView txtStart = (TextView) rowView.findViewById(R.id.start);
         TextView txtProfit = (TextView) rowView.findViewById(R.id.profit);
         TextView txtGame = (TextView) rowView.findViewById(R.id.game);
+        TextView txtBlinds = (TextView) rowView.findViewById(R.id.blinds);
 
         txtLocation.setText(active.get(position).getLocation().getLocation());
+
+        try {
+            txtBlinds.setText(active.get(position).getBlinds().toString());
+        } catch (NullPointerException e) {
+            txtBlinds.setText("Tournament");
+        }
 
         Calendar t1 = Calendar.getInstance();
         Calendar t2 = Calendar.getInstance();

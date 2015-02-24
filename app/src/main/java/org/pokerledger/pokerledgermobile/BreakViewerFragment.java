@@ -24,7 +24,7 @@ import java.util.ArrayList;
 /**
  * Created by Max on 9/25/14.
  */
-public class ViewBreaksFragment extends DialogFragment implements AdapterView.OnItemClickListener {
+public class BreakViewerFragment extends DialogFragment implements AdapterView.OnItemClickListener {
     private ArrayList<Break> breaks = new ArrayList<Break>();
     private ArrayAdapter<Break> adapter;
     private ListView breakList;

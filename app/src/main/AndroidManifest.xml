@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:allowBackup="true"
@@ -52,8 +53,16 @@
                 android:value="org.pokerledger.pokerledgermobile.MainActivity" />
         </activity>
         <activity
-            android:name=".UpdateSessionActivity"
+            android:name=".EditSessionActivity"
             android:label="@string/update_activity_name"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.pokerledger.pokerledgermobile.MainActivity" />
+        </activity>
+        <activity
+            android:name=".BackupActivity"
+            android:label="@string/backup_activity_name"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

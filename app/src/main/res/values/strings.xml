@@ -9,10 +9,12 @@
     <string name="history_activity_name">History</string>
     <string name="statistics_activity_name">Statistics</string>
     <string name="update_activity_name">Update Session</string>
+    <string name="backup_activity_name">Backup &amp; Restore</string>
 
     <string name="action_settings">Settings</string>
     <string name="action_add_session">Add Session</string>
     <string name="action_view_history">History</string>
+    <string name="action_backup_restore">Backup &amp; Restore</string>
     <string name="action_statistics">Statistics</string>
     <string name="action_sync">Sync</string>
 
@@ -43,6 +45,13 @@
     <string name="add_break_hint">Add Break</string>
     <string name="notes_hint">Notes (300 char. max)</string>
     <string name="save_session_hint">Save</string>
+    <string name="login_radio_text">Login</string>
+    <string name="register_radio_text">Register</string>
+    <string name="username_hint">username</string>
+    <string name="password_hint">password</string>
+    <string name="confirm_hint">confirm password</string>
+    <string name="backup_db_hint">Backup</string>
+    <string name="restore_db_hint">Restore</string>
 
     <string name="close_dialog_hint">Close</string>
     <string name="cancel_dialog_hint">Cancel</string>

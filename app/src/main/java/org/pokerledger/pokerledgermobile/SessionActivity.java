@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -244,7 +243,7 @@ public class SessionActivity extends Activity {
     }
 
     public void showBreaksDialog(View v) {
-        if (current.getBreaks() == null) {
+        if (current.getBreaks().size() == 0) {
             Toast.makeText(this, "There are no breaks associated with this session.", Toast.LENGTH_LONG).show();
         }
         else {
@@ -254,7 +253,7 @@ public class SessionActivity extends Activity {
             Bundle b = new Bundle();
             b.putString("SESSION_JSON", gson.toJson(current));
 
-            ViewBreaksFragment dialog = new ViewBreaksFragment();
+            BreakViewerFragment dialog = new BreakViewerFragment();
             dialog.setArguments(b);
             dialog.show(manager, "ViewBreaks");
         }
