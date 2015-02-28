@@ -170,7 +170,7 @@ public class Session {
 
     //other
     public boolean onBreak() {
-        if (this.breaks == null || this.breaks.size() == 0 || !(this.breaks.get(this.breaks.size() - 1).getEnd() == null)) {
+        if (this.breaks == null || this.breaks.size() == 0 || !(this.breaks.get(this.breaks.size() - 1).getEnd().equals(""))) {
             return false;
         }
         return true;

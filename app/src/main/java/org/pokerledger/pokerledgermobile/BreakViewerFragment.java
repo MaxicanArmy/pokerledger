@@ -62,7 +62,7 @@ public class BreakViewerFragment extends DialogFragment implements AdapterView.O
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        final FinishSessionActivity a = (FinishSessionActivity) getActivity();
+        final SessionActivity a = (SessionActivity) getActivity();
         final int p = position;
 
         AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
