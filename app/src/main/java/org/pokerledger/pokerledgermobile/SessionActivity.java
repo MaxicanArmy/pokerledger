@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 /**
  * Created by Max on 9/17/14.
  */
-public class SessionActivity extends Activity {
+public class SessionActivity extends BaseActivity {
     Session current = new Session();
     View activeView;
 

@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.pokerledger.pokerledgermobile.model.BSGStats;
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Break;
 import org.pokerledger.pokerledgermobile.model.Game;
@@ -16,13 +17,9 @@ import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Structure;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Max on 9/12/14.
@@ -32,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sessionManager";
 
     //database version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
 
     //table names
     private static final String TABLE_BLINDS = "blinds";
@@ -43,8 +40,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_NOTE = "notes";
     private static final String TABLE_SESSION = "sessions";
     private static final String TABLE_STRUCTURE = "structures";
-    private static final String TABLE_SYNC = "sync";
     private static final String TABLE_TOURNAMENT = "tournament";
+    private static final String TABLE_LOGIN_INFO = "info";
 
     //common column names
     private static final String KEY_SESSION_ID = "session_id";
@@ -82,7 +79,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_BUY_IN = "buy_in";
     private static final String KEY_CASH_OUT = "cash_out";
     private static final String KEY_STATE = "state";
-    private static final String KEY_SYNCED = "synced";
 
     //STRUCTURE table - column names
     private static final String KEY_STRUCTURE_ID = "structure_id";
@@ -91,10 +87,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_ENTRANTS = "entrants";
     private static final String KEY_PLACED = "placed";
 
-    //SYNC table - column names
+    //INFO table - column names
+    private static final String KEY_LOGIN_ID = "login_id";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
-    private static final String KEY_SYNC_NUM = "sync_num";
 
     //create statements for tables
     //BLINDS
@@ -123,19 +119,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //SESSIONS
     private static final String CREATE_TABLE_SESSIONS = "CREATE TABLE " + TABLE_SESSION + " (" + KEY_SESSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_START + " DATETIME, " + KEY_END + " DATETIME, " + KEY_BUY_IN + " INTEGER, " + KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, "
-            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_STATE + " INTEGER, " + KEY_SYNCED + " BOOLEAN);";
+            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_STATE + " INTEGER);";
 
     //STRUCTURE
     private static final String CREATE_TABLE_STRUCTURES = "CREATE TABLE " + TABLE_STRUCTURE + " (" + KEY_STRUCTURE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_STRUCTURE + " VARCHAR(40));";
 
-    //SYNC
-    private static final String CREATE_TABLE_SYNC = "CREATE TABLE " + TABLE_SYNC + " (" + KEY_USERNAME + "  VARCHAR(20), " + KEY_PASSWORD + " VARCHAR(20), " +
-            KEY_SYNC_NUM + " INTEGER);";
-
     //TOURNAMENT
     private static final String CREATE_TABLE_TOURNAMENT = "CREATE TABLE " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + " INTEGER UNIQUE, " + KEY_ENTRANTS + " INTEGER, "
             + KEY_PLACED + " INTEGER);";
+
+    //INFO
+    private static final String CREATE_TABLE_LOGIN_INFO = "CREATE TABLE " + TABLE_LOGIN_INFO + " (" + KEY_LOGIN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_USERNAME + " VARCHAR(12), " + KEY_PASSWORD + " VARCHAR(12));";
 
     //constructor
     public DatabaseHelper(Context context) {
@@ -153,11 +149,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_NOTES);
         db.execSQL(CREATE_TABLE_STRUCTURES);
         db.execSQL(CREATE_TABLE_TOURNAMENT);
-        db.execSQL(CREATE_TABLE_SYNC);
         db.execSQL(CREATE_TABLE_BLINDS);
-
-        Log.v("create tables", CREATE_TABLE_SESSIONS + CREATE_TABLE_BREAKS + CREATE_TABLE_CASH + CREATE_TABLE_GAMES + CREATE_TABLE_LOCATIONS + CREATE_TABLE_NOTES +
-                CREATE_TABLE_STRUCTURES + CREATE_TABLE_TOURNAMENT + CREATE_TABLE_SYNC + CREATE_TABLE_BLINDS);
+        db.execSQL(CREATE_TABLE_LOGIN_INFO);
 
         ContentValues StructureValues;
 
@@ -237,12 +230,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        ContentValues blindsValues;
 
         for (int i = oldVersion; i < newVersion; i++)
         {
             switch(i)
             {
+                case 1 :
+                    db.execSQL("CREATE TABLE sessions_copy (session_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "start DATETIME, end DATETIME, buy_in INTEGER, cash_out INTEGER, structure INTEGER, game INTEGER, location INTEGER, state INTEGER)");
+                    db.execSQL("INSERT INTO sessions_copy SELECT session_id, start, end, buy_in, cash_out, structure, game, location, state " +
+                            "FROM sessions");
+                    db.execSQL("DROP TABLE sessions");
+                    db.execSQL("CREATE TABLE sessions (session_id INTEGER PRIMARY KEY AUTOINCREMENT, start DATETIME, end DATETIME, buy_in INTEGER, " +
+                            "cash_out INTEGER, structure INTEGER, game INTEGER, location INTEGER, state INTEGER)");
+                    db.execSQL("INSERT INTO sessions SELECT session_id, start, end, buy_in, cash_out, structure, game, location, state " +
+                            "FROM sessions_copy");
+                    db.execSQL("DROP TABLE sessions_copy");
+
+                    break;
+                case 2 :
+                    db.execSQL("DROP TABLE sync");
+                    break;
+                case 3 :
+                    db.execSQL(CREATE_TABLE_LOGIN_INFO);
             }
         }
     }
@@ -419,9 +429,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (s.getId() == 0) {
             String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                    KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_LOCATION + ", " + KEY_STATE + ", " + KEY_SYNCED + ") VALUES ('" + s.getStart() +
+                    KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_LOCATION + ", " + KEY_STATE + ") VALUES ('" + s.getStart() +
                     "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() +
-                    ", " + s.getLocation().getId() + ", " + s.getState() + ", 0);";
+                    ", " + s.getLocation().getId() + ", " + s.getState() + ");";
 
             db.execSQL(query);
 
@@ -454,7 +464,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } else if (s.getId() > 0) {
             String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_START + "='" + s.getStart() + "', " + KEY_END + "='" + s.getEnd() + "', " + KEY_BUY_IN + "=" +
                     s.getBuyIn() + ", " + KEY_CASH_OUT + "=" + s.getCashOut() + ", " + KEY_STRUCTURE + "=" + s.getStructure().getId() + ", " + KEY_GAME +
-                    "=" + s.getGame().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " + KEY_STATE + "=" + s.getState() + ", " + KEY_SYNCED + "=0 WHERE " +
+                    "=" + s.getGame().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " + KEY_STATE + "=" + s.getState() + " WHERE " +
                     KEY_SESSION_ID + "=" + s.getId() + ";";
 
             db.execSQL(query);
@@ -551,7 +561,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Blinds addBlinds(Blinds blindSet) {
-        Blinds returnValue = blindSet;
         SQLiteDatabase db = this.getWritableDatabase();
 
         String duplicateCheckQuery = "SELECT * FROM " + TABLE_BLINDS + " WHERE " + KEY_SMALL_BLIND + "=" + blindSet.getSB() + " AND " +
@@ -563,7 +572,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         if (c.moveToFirst()) {
             //this creates a blind object that will match an object in the spinner
-            returnValue.setId(c.getInt(c.getColumnIndex(KEY_BLIND_ID)));
+            blindSet.setId(c.getInt(c.getColumnIndex(KEY_BLIND_ID)));
         }
         else {
             ContentValues blindValues = new ContentValues();
@@ -577,14 +586,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             long blind_id = db.insert(TABLE_BLINDS, null, blindValues);
 
             if (blind_id != -1) {
-                returnValue.setId((int) blind_id);
+                blindSet.setId((int) blind_id);
             }
             db.close();
         }
 
-        return returnValue;
+        return blindSet;
     }
 
+    /*
     public int getProfit() {
         SQLiteDatabase db = this.getWritableDatabase();
         int total = 0;
@@ -600,7 +610,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return total;
     }
+    */
 
+    /*
     public double getTime() {
         SQLiteDatabase db = this.getWritableDatabase();
         int total = 0;
@@ -658,5 +670,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         db.close();
         return time - breakTime;
+    }
+    */
+
+    public HashMap<String, BSGStats> getBSGStats() {
+        HashMap<String, BSGStats> statMap = new HashMap<String, BSGStats>();
+        ArrayList<Session> sessions  = getSessions(0);
+        String key;
+        BSGStats current;
+
+        for (Session s : sessions) {
+            if (s.getBlinds() != null) {
+                key = Integer.toString(s.getBlinds().getId()) + Integer.toString(s.getStructure().getId()) + Integer.toString(s.getGame().getId());
+                current = statMap.get(key);
+
+                if (current != null) {
+                    current.updateInfo(s);
+                } else {
+                    statMap.put(key, new BSGStats(s));
+                }
+            }
+        }
+
+        return statMap;
     }
 }

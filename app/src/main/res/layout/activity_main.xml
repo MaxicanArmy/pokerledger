@@ -13,7 +13,7 @@
         android:text="ACTIVE GAMES"
         android:textStyle="bold"
         android:gravity="center"
-        android:background="#ffffff"
+        android:background="#ffffffff"
         android:visibility="gone"/>
 
     <ListView
@@ -21,8 +21,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="#ffffff"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingLeft="@dimen/standard_padding"
+        android:paddingRight="@dimen/standard_padding"
         android:layout_below="@id/active_games_header">
     </ListView>
 
@@ -38,40 +38,41 @@
             android:id="@+id/overview_header"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="OVERVIEW"
+            android:text="@string/overview_title"
             android:textStyle="bold"
             android:gravity="center"
-            android:background="#ffffff"/>
+            android:background="#ffffffff"/>
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/wrapper2"
             android:orientation="horizontal"
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:background="#ffffff"
-            android:paddingBottom="@dimen/activity_horizontal_margin">
+            android:paddingBottom="@dimen/standard_padding"
+            android:paddingLeft="@dimen/standard_padding"
+            android:paddingRight="@dimen/standard_padding"
+            android:background="#ffffffff">
 
             <TextView
                 android:id="@+id/profit_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Profit" />
+                android:text="@string/overview_profit" />
 
             <TextView
                 android:id="@+id/profit"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
-                android:layout_toRightOf="@id/profit_label" />
+                android:layout_toRightOf="@id/profit_label"
+                android:textColor="#008000" />
 
             <TextView
                 android:id="@+id/time_played_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/profit_label"
-                android:text="Time Played" />
+                android:text="@string/overview_time" />
 
             <TextView
                 android:id="@+id/time_played"
@@ -86,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/time_played_label"
-                android:text="Hourly Wage" />
+                android:text="@string/overview_hourly" />
 
             <TextView
                 android:id="@+id/hourly_wage"
@@ -94,7 +95,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="right"
                 android:layout_toRightOf="@id/hourly_wage_label"
-                android:layout_below="@id/time_played" />
+                android:layout_below="@id/time_played"
+                android:textColor="#008000" />
 
         </RelativeLayout>
     </LinearLayout>

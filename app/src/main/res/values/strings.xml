@@ -30,12 +30,6 @@
     <string name="cash_out_hint">Cash Out</string>
     <string name="entrants_hint">Entrants</string>
     <string name="placed_hint">Placed</string>
-    <string name="sb_hint">SB</string>
-    <string name="bb_hint">BB</string>
-    <string name="straddle_hint">Straddle</string>
-    <string name="bring_hint">Bring In</string>
-    <string name="ante_hint">Ante</string>
-    <string name="points_hint">$/point</string>
     <string name="new_location_hint">New</string>
     <string name="start_date_hint">Start Date</string>
     <string name="end_date_hint">End Date</string>
@@ -53,6 +47,27 @@
     <string name="backup_db_hint">Backup</string>
     <string name="restore_db_hint">Restore</string>
 
+    <string name="sb_hint">SB</string>
+    <string name="bb_hint">BB</string>
+    <string name="straddle_hint">Straddle</string>
+    <string name="bring_hint">Bring In</string>
+    <string name="ante_hint">Ante</string>
+    <string name="points_hint">$/point</string>
+
     <string name="close_dialog_hint">Close</string>
     <string name="cancel_dialog_hint">Cancel</string>
+
+    <string name="overview_title">OVERVIEW</string>
+    <string name="hourly_wage_title">HOURLY WAGE BY GAME</string>
+
+    <string name="overview_profit">Profit</string>
+    <string name="overview_time">Time Played</string>
+    <string name="overview_hourly">Hourly Wage</string>
+
+    <string-array name="timeblocks_array">
+        <item>Weekly</item>
+        <item>Monthly</item>
+        <item>Yearly</item>
+        <item>All</item>
+    </string-array>
 </resources>

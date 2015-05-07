@@ -4,44 +4,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#77000000"
-    android:padding="20dp"
     android:focusable="true"
     android:focusableInTouchMode="true">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/wrapper2"
-        android:orientation="horizontal"
+    <TextView
+        android:id="@+id/hourly_by_game_header"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hourly_wage_title"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="#ffffffff"/>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/bsgWrapper"
+        android:orientation="vertical"
         android:layout_height="wrap_content"
         android:layout_width="fill_parent"
-        android:padding="20dp"
-        android:background="#ffffff">
+        android:paddingBottom="@dimen/standard_padding"
+        android:paddingLeft="@dimen/standard_padding"
+        android:paddingRight="@dimen/standard_padding"
+        android:background="#ffffffff">
 
-        <TextView
-            android:id="@+id/profit_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Profit" />
-
-        <TextView
-            android:id="@+id/profit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_toRightOf="@id/profit_label" />
-
-        <TextView
-            android:id="@+id/time_played_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/profit_label"
-            android:text="Hours Played" />
-
-        <TextView
-            android:id="@+id/time_played"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_toRightOf="@id/time_played_label" />
-
-    </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

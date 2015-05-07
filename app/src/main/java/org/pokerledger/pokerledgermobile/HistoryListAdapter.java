@@ -2,7 +2,6 @@ package org.pokerledger.pokerledgermobile;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import android.widget.TextView;
 import org.pokerledger.pokerledgermobile.model.Break;
 import org.pokerledger.pokerledgermobile.model.Session;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,14 +37,15 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         TextView txtStart = (TextView) rowView.findViewById(R.id.start);
         TextView txtProfit = (TextView) rowView.findViewById(R.id.profit);
         TextView txtGame = (TextView) rowView.findViewById(R.id.game);
-        TextView txtBlinds = (TextView) rowView.findViewById(R.id.blinds);
+        String blinds = "Tournament";
+        //TextView txtBlinds = (TextView) rowView.findViewById(R.id.blinds);
 
-        txtLocation.setText(active.get(position).getLocation().getLocation());
+        txtLocation.setText(active.get(position).getLocation().getLocation() + " " + active.get(position).getStart());
 
         try {
-            txtBlinds.setText(active.get(position).getBlinds().toString());
+            blinds = active.get(position).getBlinds().toString();
         } catch (NullPointerException e) {
-            txtBlinds.setText("Tournament");
+            //blinds will default to tournament
         }
 
         Calendar t1 = Calendar.getInstance();
@@ -107,7 +106,7 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
             txtProfit.setText("$" + Integer.toString(total));
         }
 
-        txtGame.setText(active.get(position).getStructure().getStructure()+ " " + active.get(position).getGame().getGame());
+        txtGame.setText(blinds + " " + active.get(position).getStructure().getStructure() + " " + active.get(position).getGame().getGame());
         return rowView;
     }
 

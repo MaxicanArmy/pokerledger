@@ -1,6 +1,7 @@
 package org.pokerledger.pokerledgermobile.model;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -183,5 +184,46 @@ public class Session {
         int position = this.breaks.size() - 1;
 
         this.breaks.get(position).setEnd(datetime);
+    }
+
+    public double getTimePlayed() {  //returns time played as a double [Hours.Minutes]
+        Calendar t1 = Calendar.getInstance();
+        Calendar t2 = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        try {
+            t1.setTime(sdf.parse(this.start));
+            t2.setTime(sdf.parse(this.end));
+        } catch (Exception e) {
+            //fucking parse exception needs to be handled
+        }
+
+        int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis())/60000;
+
+        //start break time code
+
+        if (this.breaks != null) {
+            if (!this.breaks.isEmpty()) {
+                int breakMinutes = 0;
+                Calendar bs = Calendar.getInstance();
+                Calendar be = Calendar.getInstance();
+                for (Break b : this.breaks) {
+                    try {
+                        bs.setTime(sdf.parse(b.getStart()));
+                        be.setTime(sdf.parse(b.getEnd()));
+                    } catch (Exception e) {
+                        //fucking parse exception needed to be handled
+                    }
+
+                    breakMinutes += (int) (be.getTimeInMillis() - bs.getTimeInMillis()) / 60000;
+                }
+                minutes -= breakMinutes;
+            }
+        }
+        //end break time code
+        return (double) minutes / 60;
+    }
+
+    public double getProfit() {
+        return this.cashOut - this.buyIn;
     }
 }

@@ -20,8 +20,6 @@ import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Structure;
 
-import java.text.DecimalFormat;
-import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,42 +97,6 @@ public class EditSessionActivity extends SessionActivity  {
 
             ((EditText) findViewById(R.id.note)).setText(this.current.getNote());
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        switch (item.getItemId()) {
-            case R.id.add_session :
-                FragmentManager manager = getFragmentManager();
-
-                AddSessionFragment dialog = new AddSessionFragment();
-                dialog.show(manager, "AddSession");
-                break;
-            case R.id.history :
-                Intent history = new Intent(this, HistoryActivity.class);
-                this.startActivity(history);
-                break;
-            case R.id.statistics :
-                Intent statistics = new Intent(this, StatisticsActivity.class);
-                this.startActivity(statistics);
-                break;
-            case R.id.backup :
-                Intent backup = new Intent(this, BackupActivity.class);
-                this.startActivity(backup);
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public void saveFinishedSession(View v) {

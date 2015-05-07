@@ -3,35 +3,74 @@ package org.pokerledger.pokerledgermobile;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
 import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
+import org.pokerledger.pokerledgermobile.helper.SessionListStats;
 import org.pokerledger.pokerledgermobile.model.Session;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * Created by Max on 9/26/14.
  */
-public class HistoryActivity extends Activity {
-    ListView list;
+public class HistoryActivity extends BaseActivity implements AdapterView.OnItemSelectedListener {
+    protected int tbSpinnerPos = 1;
+    protected int tfSpinnerPos = 0;
+    protected boolean init = true;
+
+    //these populate the timeframes spinner and the Strings are the keys of the corresponding HashMaps
+    protected ArrayList<String> weeklyList;
+    protected ArrayList<String> monthlyList;
+    protected ArrayList<String> yearlyList;
+    protected ArrayList<String> allList;
+
+    //these populate the history list and store the overview info
+    protected HashMap<String, SessionListStats> weekly;
+    protected HashMap<String, SessionListStats> monthly;
+    protected HashMap<String, SessionListStats> yearly;
+    protected HashMap<String, SessionListStats> all;
+
+    protected ListView list;
+    protected Spinner tbSpinner;
+    protected Spinner tfSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Bundle b = savedInstanceState;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
-        list = (ListView)findViewById(R.id.list);
+        if (savedInstanceState != null) {
+            this.tbSpinnerPos = savedInstanceState.getInt("tbSpinnerPos");
+            this.tfSpinnerPos = savedInstanceState.getInt("tfSpinnerPos");
+        }
+        this.list = (ListView)findViewById(R.id.list);
+        this.tbSpinner = (Spinner) findViewById(R.id.timeblocks);
+        this.tfSpinner = (Spinner) findViewById(R.id.timeframes);
 
-        new LoadFinishedSessions().execute();
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.timeblocks_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(R.layout.spinner_item_view);
+        this.tbSpinner.setAdapter(adapter);
+        this.tbSpinner.setSelection(tbSpinnerPos);
+
+        new FillTimeBlocks().execute();
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -50,49 +89,57 @@ public class HistoryActivity extends Activity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
+    protected void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("tbSpinnerPos", this.tbSpinnerPos);
+        outState.putInt("tfSpinnerPos", this.tfSpinnerPos);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        switch (parent.getId()) {
+            case R.id.timeblocks :
+                tbSpinnerPos = pos;
+                this.tfSpinner.setEnabled(true);
+                ArrayAdapter tfAdapter;
 
-        switch (item.getItemId()) {
-            case R.id.add_session :
-                FragmentManager manager = getFragmentManager();
-
-                AddSessionFragment dialog = new AddSessionFragment();
-                dialog.show(manager, "AddSession");
+                switch (tbSpinnerPos) {
+                    case 0 :
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.weeklyList);
+                        break;
+                    case 2 :
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.yearlyList);
+                        break;
+                    case 3 :
+                        this.tfSpinner.setEnabled(false);
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.allList);
+                        break;
+                    default :
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.monthlyList);
+                }
+                tfAdapter.setDropDownViewResource(R.layout.spinner_item_view);
+                this.tfSpinner.setAdapter(tfAdapter);
                 break;
-            case R.id.history :
-                Intent history = new Intent(this, HistoryActivity.class);
-                this.startActivity(history);
-                break;
-            case R.id.statistics :
-                Intent statistics = new Intent(this, StatisticsActivity.class);
-                this.startActivity(statistics);
-                break;
-            case R.id.backup :
-                Intent backup = new Intent(this, BackupActivity.class);
-                this.startActivity(backup);
-                break;
+            case R.id.timeframes :
+                tfSpinnerPos = pos;
+                displayStats();
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Another interface callback
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            new LoadFinishedSessions().execute();
+            new FillTimeBlocks().execute();
         }
     }
 
-    public class LoadFinishedSessions extends AsyncTask<Void, Void, ArrayList<Session>> {
+    public class FillTimeBlocks extends AsyncTask<Void, Void, ArrayList<Session>> {
+
         @Override
         protected ArrayList<Session> doInBackground(Void... params) {
             DatabaseHelper db;
@@ -103,14 +150,132 @@ public class HistoryActivity extends Activity {
 
         @Override
         protected void onPostExecute(ArrayList<Session> result) {
-            HistoryListAdapter adapter = new HistoryListAdapter(HistoryActivity.this, result);
+            String startDate;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            String weekOfYear;
+            String month;
+            String year;
 
-            list.setAdapter(adapter);
+            //these populate the timeframes spinner and the Strings are the keys of the corresponding HashMaps
+            HistoryActivity.this.weeklyList = new ArrayList<String>();
+            HistoryActivity.this.monthlyList = new ArrayList<String>();
+            HistoryActivity.this.yearlyList = new ArrayList<String>();
+            HistoryActivity.this.allList = new ArrayList<String>();
+
+            //these populate the history list and store the overview info
+            HistoryActivity.this.weekly = new HashMap<String, SessionListStats>();
+            HistoryActivity.this.monthly = new HashMap<String, SessionListStats>();
+            HistoryActivity.this.yearly = new HashMap<String, SessionListStats>();
+            HistoryActivity.this.all = new HashMap<String, SessionListStats>();
+
+            HistoryActivity.this.allList.add("N/A");
+            HistoryActivity.this.all.put("N/A", new SessionListStats());
+
+            //for each session get session start time
+            for (Session s : result) {
+                startDate = s.getStart();
+                Calendar cal = Calendar.getInstance();
+                try {
+                    cal.setTime(sdf.parse(startDate));
+                } catch (Exception e) {
+                    //fucking parse exception needed to be handled
+                }
+                year = Integer.toString(cal.get(Calendar.YEAR));
+                weekOfYear = "Week" + " " + cal.get(Calendar.WEEK_OF_YEAR) + " " + year;
+                month = cal.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.US) + " " + year;
+
+                if (HistoryActivity.this.weekly.get(weekOfYear) == null) {
+                    HistoryActivity.this.weeklyList.add(weekOfYear);
+                    HistoryActivity.this.weekly.put(weekOfYear, new SessionListStats());
+                }
+
+                if (HistoryActivity.this.monthly.get(month) == null) {
+                    HistoryActivity.this.monthlyList.add(month);
+                    HistoryActivity.this.monthly.put(month, new SessionListStats());
+                }
+
+                if (HistoryActivity.this.yearly.get(year) == null) {
+                    HistoryActivity.this.yearlyList.add(year);
+                    HistoryActivity.this.yearly.put(year, new SessionListStats());
+                }
+
+                HistoryActivity.this.weekly.get(weekOfYear).addSession(s);
+                HistoryActivity.this.monthly.get(month).addSession(s);
+                HistoryActivity.this.yearly.get(year).addSession(s);
+                HistoryActivity.this.all.get("N/A").addSession(s);
+            }
+
+            HistoryActivity.this.tbSpinner.setOnItemSelectedListener(HistoryActivity.this);
+            HistoryActivity.this.tfSpinner.setOnItemSelectedListener(HistoryActivity.this);
+
+            if (init) {
+                ArrayAdapter tfAdapter;
+                switch (tbSpinnerPos) {
+                    case 0 :
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.weeklyList);
+                        break;
+                    case 2 :
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.yearlyList);
+                        break;
+                    case 3 :
+                        HistoryActivity.this.tfSpinner.setEnabled(false);
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.allList);
+                        break;
+                    default :
+                        tfAdapter = new ArrayAdapter(HistoryActivity.this, android.R.layout.simple_spinner_item, HistoryActivity.this.monthlyList);
+                }
+                tfAdapter.setDropDownViewResource(R.layout.spinner_item_view);
+                HistoryActivity.this.tfSpinner.setAdapter(tfAdapter);
+                HistoryActivity.this.tfSpinner.setSelection(tfSpinnerPos);
+                init = false;
+            }
+
+            displayStats();
         }
     }
 
+    protected void displayStats() {
+        HistoryListAdapter adapter;
+        SessionListStats stats;
+        switch (tbSpinnerPos) {
+            case 0 :
+                stats = HistoryActivity.this.weekly.get(tfSpinner.getItemAtPosition(tfSpinnerPos).toString());
+                adapter = new HistoryListAdapter(HistoryActivity.this, stats.getSessions());
+                break;
+            case 2 :
+                stats = HistoryActivity.this.yearly.get(tfSpinner.getItemAtPosition(tfSpinnerPos).toString());
+                adapter = new HistoryListAdapter(HistoryActivity.this, stats.getSessions());
+                break;
+            case 3 :
+                stats = HistoryActivity.this.all.get(tfSpinner.getItemAtPosition(tfSpinnerPos).toString());
+                adapter = new HistoryListAdapter(HistoryActivity.this, stats.getSessions());
+                break;
+            default :
+                stats = HistoryActivity.this.monthly.get(tfSpinner.getItemAtPosition(tfSpinnerPos).toString());
+                adapter = new HistoryListAdapter(HistoryActivity.this, stats.getSessions());
+        }
+        HistoryActivity.this.list.setAdapter(adapter);
+
+        TextView profit = (TextView) findViewById(R.id.profit);
+        TextView time = (TextView) findViewById(R.id.time_played);
+        TextView hourly = (TextView) findViewById(R.id.hourly_wage);
+
+        if (stats.getProfit() < 0 ) {
+            profit.setTextColor(Color.parseColor("#ff0000"));
+            hourly.setTextColor(Color.parseColor("#ff0000"));
+        }
+        else {
+            profit.setTextColor(Color.parseColor("#008000"));
+            hourly.setTextColor(Color.parseColor("#008000"));
+        }
+
+        profit.setText(stats.profitFormatted());
+        time.setText(stats.timeFormatted());
+        hourly.setText(stats.wageFormatted());
+    }
 
     protected void notifyListChange() {
-        new LoadFinishedSessions().execute();
+        //this method is necessary because i cant get fragments to call async tasks
+        new FillTimeBlocks().execute();
     }
 }

@@ -1,41 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="@dimen/list_top_margin"
-    android:paddingBottom="@dimen/list_bottom_margin">
+    android:paddingTop="@dimen/standard_padding"
+    android:paddingBottom="@dimen/standard_padding">
 
-    <TextView
-        android:id="@+id/game"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:id="@+id/row1"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/blinds"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8px"
-        android:layout_toRightOf="@id/game" />
+        <TextView
+            android:id="@+id/game"
+            android:layout_width="0dp"
+            android:layout_weight=".75"
+            android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/profit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:textColor="#008000" />
+        <TextView
+            android:id="@+id/profit"
+            android:layout_width="0dp"
+            android:layout_weight=".25"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textColor="#008000" />
+        </LinearLayout>
 
-    <TextView
-        android:id="@+id/location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/game" />
+    <LinearLayout
+        android:id="@+id/row2"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/game"
-        android:layout_alignParentRight="true" />
-</RelativeLayout>
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="0dp"
+            android:layout_weight=".75"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/start"
+            android:layout_width="0dp"
+            android:layout_weight=".25"
+            android:gravity="end"
+            android:layout_height="wrap_content" />
+        </LinearLayout>
+</LinearLayout>

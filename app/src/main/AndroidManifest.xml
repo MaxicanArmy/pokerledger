@@ -47,7 +47,7 @@
         <activity
             android:name=".StatisticsActivity"
             android:label="@string/statistics_activity_name"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="org.pokerledger.pokerledgermobile.MainActivity" />

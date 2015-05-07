@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
+import org.pokerledger.pokerledgermobile.helper.SessionListStats;
 import org.pokerledger.pokerledgermobile.model.Session;
 
 import java.io.BufferedInputStream;
@@ -47,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends BaseActivity {
     TextView profit;
     TextView timePlayed;
     TextView hourlyWage;
@@ -56,6 +58,7 @@ public class MainActivity extends Activity {
     private static final int ACTIVE_RESULT = 1;
     private static final int FINISHED_RESULT = 2;
     private static boolean updateCheck = true;
+    private ProgressDialog pdia;
 
 
     @Override
@@ -103,42 +106,12 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+    public void onPause() {
+        super.onPause();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        switch (item.getItemId()) {
-            //case R.id.action_settings :
-                //break up setting activity
-                //break;
-            case R.id.add_session :
-                FragmentManager manager = getFragmentManager();
-
-                AddSessionFragment dialog = new AddSessionFragment();
-                dialog.show(manager, "AddSession");
-                break;
-            case R.id.history :
-                Intent history = new Intent(this, HistoryActivity.class);
-                this.startActivity(history);
-                break;
-            case R.id.statistics :
-                Intent statistics = new Intent(this, StatisticsActivity.class);
-                this.startActivity(statistics);
-                break;
-            case R.id.backup :
-                Intent backup = new Intent(this, BackupActivity.class);
-                this.startActivity(backup);
-                break;
-        }
-        return super.onOptionsItemSelected(item);
+        if ((pdia != null) && pdia.isShowing())
+            pdia.dismiss();
+        pdia = null;
     }
 
     @Override
@@ -153,6 +126,7 @@ public class MainActivity extends Activity {
     }
 
     protected void notifyListChange() {
+        //this method is necessary because i cant get fragments to call async tasks
         new LoadActiveSessions().execute();
     }
 
@@ -195,14 +169,13 @@ public class MainActivity extends Activity {
 
     private class CheckUpdates extends AsyncTask<Integer, Integer, String>{
         private Context mContext;
-        private ProgressDialog pdia;
 
         public CheckUpdates (Context c) {
             this.mContext = c;
         }
 
         @Override
-        protected void onPreExecute(){
+        protected void onPreExecute() {
             super.onPreExecute();
             pdia = new ProgressDialog(mContext);
             pdia.setMessage("Checking for update...");
@@ -216,7 +189,9 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(final String responseString){
-            pdia.dismiss();
+            if ((pdia != null) && pdia.isShowing()) {
+                pdia.dismiss();
+            }
 
             if (!responseString.equals("")) {
                 AlertDialog dialog = new AlertDialog.Builder(mContext).create();
@@ -352,47 +327,25 @@ public class MainActivity extends Activity {
         }
     }
 
-    public class LoadStatistics extends AsyncTask<Void, Void, Void> {
-        int totalProfit;
-        double totalTime;
+    public class LoadStatistics extends AsyncTask<Void, Void, SessionListStats> {
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected SessionListStats doInBackground(Void... params) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
-            totalProfit = db.getProfit();
-            totalTime = db.getTime();
-            return null;
+            return new SessionListStats(db.getSessions(0));
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            int hours = (int) Math.floor(totalTime);
-            double minutes = Math.round((totalTime - hours) * 100) * 60 / 100; //ridiculous additional math to defeat bizarre Double arithmetic not being precise
-            double hourly;
-            if (totalTime == 0) {
-                hourly = 0;
-            }
-            else {
-                hourly = (double) this.totalProfit / totalTime;
-            }
-            String timePlayed = "";
-
-            if (hours > 0) {
-                timePlayed += Integer.toString(hours) + "h";
+        protected void onPostExecute(SessionListStats stats) {
+            if (stats.getProfit() < 0 ) {
+                MainActivity.this.profit.setTextColor(Color.parseColor("#ff0000"));
+                MainActivity.this.hourlyWage.setTextColor(Color.parseColor("#ff0000"));
             }
 
-            if (minutes > 0) {
-                timePlayed += " " + (int) minutes + "m";
-            }
-            else if (hours == 0) {
-                timePlayed = "0m";
-            }
-
-            MainActivity.this.profit.setText("$" + Integer.toString(this.totalProfit));
-            MainActivity.this.timePlayed.setText(timePlayed);
-            DecimalFormat df = new DecimalFormat("0.00");
-            MainActivity.this.hourlyWage.setText("$" + df.format(hourly));
+            MainActivity.this.profit.setText(stats.profitFormatted());
+            MainActivity.this.timePlayed.setText(stats.timeFormatted());
+            MainActivity.this.hourlyWage.setText(stats.wageFormatted());
         }
     }
 }
