@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#77000000"
     android:focusable="true"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    style="@style/activity">
 
     <TextView
         android:id="@+id/hourly_by_game_header"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/hourly_wage_title"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:background="#ffffffff"/>
+        android:text="@string/wage_game_title"
+        style="@style/header"/>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/bsgWrapper"
         android:orientation="vertical"
-        android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:paddingBottom="@dimen/standard_padding"
-        android:paddingLeft="@dimen/standard_padding"
-        android:paddingRight="@dimen/standard_padding"
-        android:background="#ffffffff">
+        style="@style/subheader">
+    </LinearLayout>
 
+    <TextView
+        android:id="@+id/hourly_by_day_header"
+        android:text="@string/wage_day_title"
+        style="@style/header"/>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/dayWrapper"
+        android:orientation="vertical"
+        style="@style/subheader">
     </LinearLayout>
 </LinearLayout>

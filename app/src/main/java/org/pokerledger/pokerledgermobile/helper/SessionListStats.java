@@ -15,6 +15,10 @@ public class SessionListStats {
 
     public SessionListStats() {}
 
+    public SessionListStats(Session s) {
+        this.addSession(s);
+    }
+
     public SessionListStats(ArrayList<Session> sessionList) {
         for (Session s : sessionList) {
             this.addSession(s);

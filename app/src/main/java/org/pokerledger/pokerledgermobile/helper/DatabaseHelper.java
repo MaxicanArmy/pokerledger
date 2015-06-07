@@ -671,7 +671,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return time - breakTime;
     }
-    */
 
     public HashMap<String, BSGStats> getBSGStats() {
         HashMap<String, BSGStats> statMap = new HashMap<String, BSGStats>();
@@ -694,4 +693,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return statMap;
     }
+    */
 }

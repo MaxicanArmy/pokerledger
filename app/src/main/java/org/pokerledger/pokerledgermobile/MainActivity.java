@@ -150,10 +150,10 @@ public class MainActivity extends BaseActivity {
 
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             if (sessions.size() > 0) {
-                float scale = getResources().getDisplayMetrics().density;
-                int dpAsPixels = (int) (16*scale + 0.5f);
+                //float scale = getResources().getDisplayMetrics().density;
+                //int dpAsPixels = (int) (8*scale + 0.5f);
 
-                params.setMargins(0,0,0,dpAsPixels);
+                //params.setMargins(0,0,0,dpAsPixels);
                 params.addRule(RelativeLayout.BELOW, R.id.active_games_header);
                 list.setLayoutParams(params);
                 listHeader.setVisibility(View.VISIBLE);

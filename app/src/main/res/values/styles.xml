@@ -8,16 +8,47 @@
     <style name="Wrapper" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">#ffffffff</item>
-        <item name="android:layout_marginTop">10dp</item>
-        <item name="android:layout_marginLeft">10dp</item>
-        <item name="android:layout_marginRight">10dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:background">@drawable/border</item>
     </style>
 
     <style name="DialogWrap" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">#ffffffff</item>
+    </style>
+
+    <style name="activity" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">#77000000</item>
+        <item name="android:paddingRight">4dp</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="header" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:background">@drawable/headerborder</item>
+    </style>
+
+    <style name="subheader" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">@dimen/standard_padding</item>
+        <item name="android:paddingRight">@dimen/standard_padding</item>
+        <item name="android:paddingLeft">@dimen/standard_padding</item>
+        <item name="android:background">@drawable/subheaderborder</item>
+    </style>
+
+    <style name="row" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingBottom">@dimen/standard_padding</item>
     </style>
 
 </resources>

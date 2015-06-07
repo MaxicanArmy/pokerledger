@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#77000000">
+    style="@style/activity">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/timeframe_wrapper"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#ffffffff">
+        style="@style/Wrapper">
 
         <Spinner
             android:id="@+id/timeblocks"
@@ -27,71 +25,77 @@
             android:textSize="10dp" />
     </LinearLayout>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <TextView
+        android:id="@+id/active_games_header"
+        android:text="@string/summary_title"
+        style="@style/header"/>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/overview_wrapper"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:paddingBottom="@dimen/standard_padding"
-        android:paddingLeft="@dimen/standard_padding"
-        android:paddingRight="@dimen/standard_padding"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_below="@id/timeframe_wrapper"
-        android:background="#ffffffff">
+        android:orientation="vertical"
+        style="@style/subheader">
 
-        <TextView
-            android:id="@+id/profit_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/overview_profit" />
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/row1"
+            android:orientation="horizontal"
+            style="@style/row">
 
-        <TextView
-            android:id="@+id/profit"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_toRightOf="@id/profit_label" />
+            <TextView
+                android:id="@+id/profit_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/overview_profit" />
 
-        <TextView
-            android:id="@+id/time_played_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/profit_label"
-            android:text="@string/overview_time" />
+            <TextView
+                android:id="@+id/profit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"/>
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/time_played"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_toRightOf="@id/time_played_label"
-            android:layout_below="@id/profit" />
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/row2"
+            android:orientation="horizontal"
+            style="@style/row">
 
-        <TextView
-            android:id="@+id/hourly_wage_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/time_played_label"
-            android:text="@string/overview_hourly" />
+            <TextView
+                android:id="@+id/time_played_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/overview_time" />
 
-        <TextView
-            android:id="@+id/hourly_wage"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_toRightOf="@id/hourly_wage_label"
-            android:layout_below="@id/time_played" />
+            <TextView
+                android:id="@+id/time_played"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"/>
 
-    </RelativeLayout>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/row3"
+            android:orientation="horizontal"
+            style="@style/row">
+
+            <TextView
+                android:id="@+id/hourly_wage_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/overview_hourly" />
+
+            <TextView
+                android:id="@+id/hourly_wage"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <ListView
         android:id="@+id/list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#ffffff"
+        style="@style/Wrapper"
         android:paddingLeft="@dimen/standard_padding"
         android:paddingRight="@dimen/standard_padding"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_below="@id/overview_wrapper">
     </ListView>
-</RelativeLayout>
+</LinearLayout>

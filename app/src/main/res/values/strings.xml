@@ -58,7 +58,10 @@
     <string name="cancel_dialog_hint">Cancel</string>
 
     <string name="overview_title">OVERVIEW</string>
-    <string name="hourly_wage_title">HOURLY WAGE BY GAME</string>
+    <string name="summary_title">SUMMARY</string>
+    <string name="active_games_title">ACTIVE GAMES</string>
+    <string name="wage_game_title">HOURLY WAGE BY GAME</string>
+    <string name="wage_day_title">HOURLY WAGE BY DAY</string>
 
     <string name="overview_profit">Profit</string>
     <string name="overview_time">Time Played</string>
