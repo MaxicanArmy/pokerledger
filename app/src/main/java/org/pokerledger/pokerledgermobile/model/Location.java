@@ -6,6 +6,7 @@ package org.pokerledger.pokerledgermobile.model;
 public class Location {
     private int id = 0;
     private String location = "";
+    private int filtered = 0;
 
     //constructors
     public Location() {}
@@ -13,6 +14,12 @@ public class Location {
     public Location(int i, String s) {
         this.id = i;
         this.location = s;
+    }
+
+    public Location(int i, String s, int f) {
+        this.id = i;
+        this.location = s;
+        this.filtered = f;
     }
 
     @Override
@@ -29,6 +36,10 @@ public class Location {
         this.location = s;
     }
 
+    public void setFiltered(int f) {
+        this.filtered = f;
+    }
+
     //getters
     public int getId() {
         return this.id;
@@ -36,5 +47,9 @@ public class Location {
 
     public String getLocation() {
         return this.location;
+    }
+
+    public int getFiltered() {
+        return this.filtered;
     }
 }

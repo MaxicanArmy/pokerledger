@@ -6,6 +6,7 @@ package org.pokerledger.pokerledgermobile.model;
 public class Structure {
     private int id = 0;
     private String structure = "";
+    private int filtered = 0;
 
     //constructors
     public Structure() {}
@@ -13,6 +14,12 @@ public class Structure {
     public Structure(int i, String s) {
         this.id = i;
         this.structure = s;
+    }
+
+    public Structure(int i, String s, int f) {
+        this.id = i;
+        this.structure = s;
+        this.filtered = f;
     }
 
     @Override
@@ -29,6 +36,10 @@ public class Structure {
         this.structure = s;
     }
 
+    public void setFiltered(int f) {
+        this.filtered = f;
+    }
+
     //getters
     public int getId() {
         return this.id;
@@ -36,5 +47,9 @@ public class Structure {
 
     public String getStructure() {
         return this.structure;
+    }
+
+    public int getFiltered() {
+        return this.filtered;
     }
 }

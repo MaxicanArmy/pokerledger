@@ -4,13 +4,18 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
 import org.pokerledger.pokerledgermobile.helper.SessionListStats;
 import org.pokerledger.pokerledgermobile.model.Blinds;
+import org.pokerledger.pokerledgermobile.model.Game;
+import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
+import org.pokerledger.pokerledgermobile.model.Structure;
 
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
@@ -26,10 +31,15 @@ import java.util.TreeMap;
 public class FilterActivity extends BaseActivity {
     //need variables for all the currently set filters loaded from the filters DB table
     ArrayList<Integer> filteredType = new ArrayList<Integer>();
+    private static final int typesIdBase = 10000;
     ArrayList<Integer> filteredBlinds = new ArrayList<Integer>();
+    private static final int blindsIdBase = 20000;
     ArrayList<Integer> filteredStructures = new ArrayList<Integer>();
+    private static final int structuresIdBase = 30000;
     ArrayList<Integer> filteredGames = new ArrayList<Integer>();
+    private static final int gamesIdBase = 40000;
     ArrayList<Integer> filteredLocations = new ArrayList<Integer>();
+    private static final int locationsIdBase = 50000;
     String filterStartDate;
     String filterEndDate;
 
@@ -40,10 +50,16 @@ public class FilterActivity extends BaseActivity {
 
         //new LoadTypeFilter().execute();
         new LoadBlindsFilter().execute();
-        //new LoadStructuresFilter().execute();
-        //new LoadGamesFilter().execute();
-        //new LoadLocationsFilter().execute();
+        new LoadStructuresFilter().execute();
+        new LoadGamesFilter().execute();
+        new LoadLocationsFilter().execute();
         //new LoadDateFilter().execute();
+    }
+
+    public void saveFilters(View v) {
+        //reset all filters
+        new SaveBlindsFilter().execute();
+
     }
 
     public class LoadBlindsFilter extends AsyncTask<Void, Void, ArrayList<Blinds>> {
@@ -57,143 +73,129 @@ public class FilterActivity extends BaseActivity {
 
         @Override
         protected void onPostExecute(ArrayList<Blinds> result) {
+            LinearLayout blindsWrapper = (LinearLayout) findViewById(R.id.blindsWrapper);
+            CheckBox current;
 
+            for (Blinds b : result) {
+                current = new CheckBox(FilterActivity.this);
+                current.setId(blindsIdBase + b.getId());
+                current.setText(b.toString());
+
+                if (b.getFiltered() == 0) {
+                    current.setChecked(true);
+                }
+                blindsWrapper.addView(current);
+            }
         }
     }
-    //BSG stands for Blind - Structure - Game Statistics
-    public class LoadBSGStatistics extends AsyncTask<Void, Void, ArrayList<Session>> {
+
+    public class SaveBlindsFilter extends AsyncTask<Void, Void, Void> {
         @Override
-        protected ArrayList<Session> doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
             DatabaseHelper db;
             db = new DatabaseHelper(getApplicationContext());
 
-            return db.getSessions(0);
+            ArrayList<Blinds> blinds = db.getAllBlinds();
+            CheckBox current;
+            int filtered;
+            String query;
+            String sessionQuery;
+
+            for (Blinds b : blinds) {
+                filtered = 0;
+
+                current = (CheckBox) findViewById(blindsIdBase + b.getId());
+                if (!current.isChecked()) {
+                    filtered = 1;
+                }
+                query = "UPDATE blinds SET filtered=" + filtered + " WHERE blind_id=" + b.getId() + ";";
+                sessionQuery = "UPDATE sessions SET filtered=" + filtered + " WHERE session_id IN (SELECT session_id FROM cash WHERE blinds=" + b.getId() + ");";
+
+                db.runQuery(query);
+                db.runQuery(sessionQuery);
+            }
+
+            return null;
+        }
+    }
+
+    public class LoadStructuresFilter extends AsyncTask<Void, Void, ArrayList<Structure>> {
+        @Override
+        protected ArrayList<Structure> doInBackground(Void... params) {
+            DatabaseHelper db;
+            db = new DatabaseHelper(getApplicationContext());
+
+            return db.getAllStructures();
         }
 
         @Override
-        protected void onPostExecute(ArrayList<Session> result) {
+        protected void onPostExecute(ArrayList<Structure> result) {
+            LinearLayout structuresWrapper = (LinearLayout) findViewById(R.id.structuresWrapper);
+            CheckBox current;
 
-            HashMap<String, SessionListStats> bsgStats = new HashMap<String, SessionListStats>();
-            HashMap<String, SessionListStats> dayOfWeekStats = new HashMap<String, SessionListStats>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            Calendar cal;
-            String key;
-            String label;
-            SessionListStats current;
+            for (Structure s : result) {
+                current = new CheckBox(FilterActivity.this);
+                current.setId(structuresIdBase + s.getId());
+                current.setText(s.toString());
 
-            LinearLayout bsgWrapper = (LinearLayout) findViewById(R.id.bsgWrapper);
-            LinearLayout dayWrapper = (LinearLayout) findViewById(R.id.dayWrapper);
-            LinearLayout rowWrapper;
-            TextView currentBSG;
-            TextView currentHourly;
-            SessionListStats stats;
-
-            for (Session s : result) {
-                if (s.getBlinds() != null) {
-                    key = s.getGame().toString() + " " + s.getStructure().toString() + " " + s.getBlinds().toString();
+                if (s.getFiltered() == 0) {
+                    current.setChecked(true);
                 }
-                else {
-                    key = s.getGame().toString() + " " + s.getStructure().toString() + " " + " Tournament";
-                }
-
-                current = bsgStats.get(key);
-
-                if (current != null) {
-                    current.addSession(s);
-                } else {
-                    bsgStats.put(key, new SessionListStats(s));
-                }
-
-                cal = Calendar.getInstance();
-                try {
-                    cal.setTime(sdf.parse(s.getStart()));
-                } catch (Exception e) {
-                    //fucking parse exception needed to be handled
-                }
-                SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE");
-                key = cal.get(Calendar.DAY_OF_WEEK) + dateFormat.format(cal.getTime());
-
-                current = dayOfWeekStats.get(key);
-
-                if (current != null) {
-                    current.addSession(s);
-                } else {
-                    dayOfWeekStats.put(key, new SessionListStats(s));
-                }
+                structuresWrapper.addView(current);
             }
+        }
+    }
 
-            Map<String, SessionListStats> sortedBSG = new TreeMap<String, SessionListStats>(bsgStats);
-            Map<String, SessionListStats> sortedDay = new TreeMap<String, SessionListStats>(dayOfWeekStats);
+    public class LoadGamesFilter extends AsyncTask<Void, Void, ArrayList<Game>> {
+        @Override
+        protected ArrayList<Game> doInBackground(Void... params) {
+            DatabaseHelper db;
+            db = new DatabaseHelper(getApplicationContext());
 
-            LinearLayout.LayoutParams llpLabel = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, .75f);
-            LinearLayout.LayoutParams llpStat = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, .25f);
+            return db.getAllGames();
+        }
 
-            for (Map.Entry<String, SessionListStats> entry : sortedBSG.entrySet()) {
-                rowWrapper = new LinearLayout(FilterActivity.this);
-                currentBSG = new TextView(FilterActivity.this);
-                currentHourly = new TextView(FilterActivity.this);
-                currentHourly.setGravity(Gravity.END);
+        @Override
+        protected void onPostExecute(ArrayList<Game> result) {
+            LinearLayout gamesWrapper = (LinearLayout) findViewById(R.id.gamesWrapper);
+            CheckBox current;
 
-                stats = entry.getValue();
+            for (Game g : result) {
+                current = new CheckBox(FilterActivity.this);
+                current.setId(gamesIdBase + g.getId());
+                current.setText(g.toString());
 
-                Session ex = stats.getSessions().get(0); //get an example session to retrieve the blinds, structure and game
-                if (ex.getBlinds() == null) {
-                    label = ex.getStructure().toString() + " " + ex.getGame().toString() + " Tournament";
+                if (g.getFiltered() == 0) {
+                    current.setChecked(true);
                 }
-                else {
-                    label = ex.getBlinds().toString() + " " + ex.getStructure().toString() + " " + ex.getGame().toString();
-                }
-                currentBSG.setText(label);
-
-                if (stats.getProfit() < 0 ) {
-                    currentHourly.setTextColor(Color.parseColor("#ff0000"));
-                } else {
-                    currentHourly.setTextColor(Color.parseColor("#008000"));
-                }
-                currentHourly.setText(stats.wageFormatted());
-
-                currentBSG.setLayoutParams(llpLabel);
-                currentHourly.setLayoutParams(llpStat);
-
-                float scale = getResources().getDisplayMetrics().density;
-                int dpAsPixels = (int) (8*scale + 0.5f);
-
-                rowWrapper.setPadding(0,0,0,dpAsPixels);
-                rowWrapper.addView(currentBSG);
-                rowWrapper.addView(currentHourly);
-
-                bsgWrapper.addView(rowWrapper);
+                gamesWrapper.addView(current);
             }
+        }
+    }
 
-            for (Map.Entry<String, SessionListStats> entry : sortedDay.entrySet()) {
-                rowWrapper = new LinearLayout(FilterActivity.this);
-                currentBSG = new TextView(FilterActivity.this);
-                currentHourly = new TextView(FilterActivity.this);
-                currentHourly.setGravity(Gravity.END);
+    public class LoadLocationsFilter extends AsyncTask<Void, Void, ArrayList<Location>> {
+        @Override
+        protected ArrayList<Location> doInBackground(Void... params) {
+            DatabaseHelper db;
+            db = new DatabaseHelper(getApplicationContext());
 
-                stats = entry.getValue();
+            return db.getAllLocations();
+        }
 
-                key = entry.getKey();
-                currentBSG.setText(key.substring(1, key.length()) + " (" + stats.timeFormatted() + ")");
+        @Override
+        protected void onPostExecute(ArrayList<Location> result) {
+            LinearLayout locationsWrapper = (LinearLayout) findViewById(R.id.locationsWrapper);
+            CheckBox current;
 
-                if (stats.getProfit() < 0 ) {
-                    currentHourly.setTextColor(Color.parseColor("#ff0000"));
-                } else {
-                    currentHourly.setTextColor(Color.parseColor("#008000"));
+            for (Location l : result) {
+                current = new CheckBox(FilterActivity.this);
+                current.setId(locationsIdBase + l.getId());
+                current.setText(l.toString());
+
+                if (l.getFiltered() == 0) {
+                    current.setChecked(true);
                 }
-                currentHourly.setText(stats.wageFormatted());
-
-                currentBSG.setLayoutParams(llpLabel);
-                currentHourly.setLayoutParams(llpStat);
-
-                float scale = getResources().getDisplayMetrics().density;
-                int dpAsPixels = (int) (8*scale + 0.5f);
-
-                rowWrapper.setPadding(0,0,0,dpAsPixels);
-                rowWrapper.addView(currentBSG);
-                rowWrapper.addView(currentHourly);
-
-                dayWrapper.addView(rowWrapper);
+                locationsWrapper.addView(current);
             }
         }
     }

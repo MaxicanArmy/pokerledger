@@ -68,5 +68,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="org.pokerledger.pokerledgermobile.MainActivity" />
         </activity>
+        <activity
+            android:name=".FilterActivity"
+            android:label="@string/filter_activity_name"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="org.pokerledger.pokerledgermobile.MainActivity" />
+        </activity>
     </application>
 </manifest>

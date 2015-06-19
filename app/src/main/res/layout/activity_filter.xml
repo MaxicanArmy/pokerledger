@@ -1,6 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/activity">
 
-</LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/type_header"
+            android:text="Session Type"
+            style="@style/header"/>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/typeWrapper"
+            android:orientation="vertical"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
+
+            <CheckBox android:id="@+id/tournament"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tournament"
+                android:checked="true"/>
+
+            <CheckBox android:id="@+id/cash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cash Games"
+                android:checked="true"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/blinds_header"
+            android:text="Blinds"
+            style="@style/header"/>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/blindsWrapper"
+            android:orientation="vertical"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/structures_header"
+            android:text="Structures"
+            style="@style/header"/>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/structuresWrapper"
+            android:orientation="vertical"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/games_header"
+            android:text="Games"
+            style="@style/header"/>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/gamesWrapper"
+            android:orientation="vertical"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/locations_header"
+            android:text="Locations"
+            style="@style/header"/>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/locationsWrapper"
+            android:orientation="vertical"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/dates_header"
+            android:text="Date Range"
+            style="@style/header"/>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/datesWrapper"
+            android:orientation="vertical"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
+
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/wrapper7"
+            android:orientation="horizontal"
+            style="@style/Wrapper">
+
+            <Button
+                android:id="@+id/Save"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/save_session_hint"
+                android:onClick="saveFilters" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

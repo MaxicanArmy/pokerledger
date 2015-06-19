@@ -11,11 +11,10 @@ public class Blinds {
     private int bringIn = 0;
     private int ante = 0;
     private int perPoint = 0;
-
+    private int filtered = 0;
 
     //constructors
     public Blinds() {}
-
 
     public Blinds(int sb, int bb, int str, int bi, int a, int pp) {
         this.sb = sb;
@@ -26,7 +25,17 @@ public class Blinds {
         this.perPoint = pp;
     }
 
-    public Blinds(int id, int sb, int bb, int str, int bi, int a, int pp) {
+    public Blinds(int sb, int bb, int str, int bi, int a, int pp, int f) {
+        this.sb = sb;
+        this.bb = bb;
+        this.straddle = str;
+        this.bringIn = bi;
+        this.ante = a;
+        this.perPoint = pp;
+        this.filtered = f;
+    }
+
+    public Blinds(int id, int sb, int bb, int str, int bi, int a, int pp, int f) {
         this.id = id;
         this.sb = sb;
         this.bb = bb;
@@ -34,6 +43,7 @@ public class Blinds {
         this.bringIn = bi;
         this.ante = a;
         this.perPoint = pp;
+        this.filtered = f;
     }
 
     @Override
@@ -95,6 +105,10 @@ public class Blinds {
         this.perPoint = i;
     }
 
+    public void setFiltered(int f) {
+        this.filtered = f;
+    }
+
     //getters
     public int getId() {
         return this.id;
@@ -122,5 +136,9 @@ public class Blinds {
 
     public int getPerPoint() {
         return this.perPoint;
+    }
+
+    public int getFiltered() {
+        return this.filtered;
     }
 }

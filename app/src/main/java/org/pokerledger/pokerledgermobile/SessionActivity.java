@@ -228,7 +228,7 @@ public class SessionActivity extends BaseActivity {
                     perPoint = Integer.parseInt(ppText);
                 }
 
-                new AddBlinds().execute(new Blinds(sb, bb, straddle, bringIn, ante, perPoint));
+                new AddBlinds().execute(new Blinds(sb, bb, straddle, bringIn, ante, perPoint, 0));
             }
         });
 

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -137,9 +138,8 @@ public class MainActivity extends BaseActivity {
 
         @Override
         protected Void doInBackground(Void... params) {
-            DatabaseHelper db;
-            db = new DatabaseHelper(getApplicationContext());
-            sessions = db.getSessions(1);
+            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
+            sessions = dbHelper.getSessions(1);
 
             return null;
         }
@@ -331,9 +331,8 @@ public class MainActivity extends BaseActivity {
 
         @Override
         protected SessionListStats doInBackground(Void... params) {
-            DatabaseHelper db;
-            db = new DatabaseHelper(getApplicationContext());
-            return new SessionListStats(db.getSessions(0));
+            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
+            return new SessionListStats(dbHelper.getSessions(0));
         }
 
         @Override

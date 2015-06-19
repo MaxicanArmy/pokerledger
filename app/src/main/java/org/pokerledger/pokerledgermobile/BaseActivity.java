@@ -39,6 +39,10 @@ public class BaseActivity extends Activity {
                 Intent statistics = new Intent(this, StatisticsActivity.class);
                 this.startActivity(statistics);
                 break;
+            case R.id.filter :
+                Intent filter = new Intent(this, FilterActivity.class);
+                this.startActivity(filter);
+                break;
             case R.id.backup :
                 Intent backup = new Intent(this, BackupActivity.class);
                 this.startActivity(backup);

@@ -29,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sessionManager";
 
     //database version
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 6;
 
     //table names
     private static final String TABLE_BLINDS = "blinds";
@@ -42,6 +42,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_STRUCTURE = "structures";
     private static final String TABLE_TOURNAMENT = "tournament";
     private static final String TABLE_LOGIN_INFO = "info";
+    private static final String TABLE_FILTER = "filter";
 
     //common column names
     private static final String KEY_SESSION_ID = "session_id";
@@ -50,6 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_GAME = "game";
     private static final String KEY_LOCATION = "location";
     private static final String KEY_STRUCTURE = "structure";
+    private static final String KEY_FILTERED = "filtered";
 
     //BLINDS table - column names
     private static final String KEY_BLIND_ID = "blind_id";
@@ -92,6 +94,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
 
+    //FILTER table - column names
+    private static final String KEY_FILTER_ID = "filter_id";
+
     //create statements for tables
     //BLINDS
     private static final String CREATE_TABLE_BLINDS = "CREATE TABLE " + TABLE_BLINDS + " (" + KEY_BLIND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -133,6 +138,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_LOGIN_INFO = "CREATE TABLE " + TABLE_LOGIN_INFO + " (" + KEY_LOGIN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_USERNAME + " VARCHAR(12), " + KEY_PASSWORD + " VARCHAR(12));";
 
+    //FILTER
+    private static final String CREATE_TABLE_FILTER = "CREATE TABLE " + TABLE_FILTER + " (" + KEY_FILTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_START + " DATETIME, " + KEY_END + " DATETIME);";
+
     //constructor
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -151,6 +160,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_TOURNAMENT);
         db.execSQL(CREATE_TABLE_BLINDS);
         db.execSQL(CREATE_TABLE_LOGIN_INFO);
+        db.execSQL(CREATE_TABLE_FILTER);
 
         ContentValues StructureValues;
 
@@ -230,7 +240,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
         for (int i = oldVersion; i < newVersion; i++)
         {
             switch(i)
@@ -246,22 +255,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     db.execSQL("INSERT INTO sessions SELECT session_id, start, end, buy_in, cash_out, structure, game, location, state " +
                             "FROM sessions_copy");
                     db.execSQL("DROP TABLE sessions_copy");
-
                     break;
                 case 2 :
                     db.execSQL("DROP TABLE sync");
                     break;
                 case 3 :
                     db.execSQL(CREATE_TABLE_LOGIN_INFO);
+                    break;
+                case 4 :
+                    db.execSQL(CREATE_TABLE_FILTER);
+                    db.execSQL("ALTER TABLE sessions ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE blinds ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE structures ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE games ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE locations ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    break;
+                case 5 :
+                    db.execSQL("DROP TABLE sync");
+                    db.execSQL(CREATE_TABLE_FILTER);
+                    db.execSQL("ALTER TABLE sessions ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE blinds ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE structures ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE games ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    db.execSQL("ALTER TABLE locations ADD COLUMN filtered BOOLEAN DEFAULT 0");
+                    break;
             }
         }
     }
 
+    public boolean runQuery(String s) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.execSQL(s);
+
+        return true;
+    }
+
     public ArrayList<Structure> getAllStructures() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
         ArrayList<Structure> structures = new ArrayList<Structure>();
         String query = "SELECT * FROM " + TABLE_STRUCTURE;
 
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
 
         //loop through rows and add to structures array if any results returned
@@ -270,6 +305,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Structure s = new Structure();
                 s.setId(c.getInt(c.getColumnIndex(KEY_STRUCTURE_ID)));
                 s.setStructure(c.getString(c.getColumnIndex(KEY_STRUCTURE)));
+                s.setFiltered(c.getInt(c.getColumnIndex(KEY_FILTERED)));
 
                 structures.add(s);
             } while (c.moveToNext());
@@ -279,10 +315,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Game> getAllGames() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
         ArrayList<Game> games = new ArrayList<Game>();
         String query = "SELECT * FROM " + TABLE_GAME;
 
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
 
         //loop through rows and add to games array if any results returned
@@ -291,6 +328,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Game g = new Game();
                 g.setId(c.getInt(c.getColumnIndex(KEY_GAME_ID)));
                 g.setGame(c.getString(c.getColumnIndex(KEY_GAME)));
+                g.setFiltered(c.getInt(c.getColumnIndex(KEY_FILTERED)));
 
                 games.add(g);
             } while (c.moveToNext());
@@ -300,10 +338,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Location> getAllLocations() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
         ArrayList<Location> locations = new ArrayList<Location>();
         String query = "SELECT * FROM " + TABLE_LOCATION;
 
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
 
         //loop through rows and add to location array if any results returned
@@ -312,6 +351,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 Location l = new Location();
                 l.setId(c.getInt(c.getColumnIndex(KEY_LOCATION_ID)));
                 l.setLocation(c.getString(c.getColumnIndex(KEY_LOCATION)));
+                l.setFiltered(c.getInt(c.getColumnIndex(KEY_FILTERED)));
 
                 locations.add(l);
             } while (c.moveToNext());
@@ -321,12 +361,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Blinds> getAllBlinds() {
-        ArrayList<Blinds> blinds = new ArrayList<Blinds>();
+        SQLiteDatabase db = this.getReadableDatabase();
 
+        ArrayList<Blinds> blinds = new ArrayList<Blinds>();
         String query = "SELECT * FROM " + TABLE_BLINDS + " ORDER BY " + KEY_PER_POINT + " ASC," + KEY_BIG_BLIND + " ASC, " + KEY_SMALL_BLIND + " ASC, " +
                 KEY_STRADDLE + " ASC, " + KEY_ANTE + " ASC, " + KEY_BRING_IN + " ASC;";
 
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
 
         //loop through rows and add to location array if any results returned
@@ -340,6 +380,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 b.setBringIn(c.getInt(c.getColumnIndex(KEY_BRING_IN)));
                 b.setAnte(c.getInt(c.getColumnIndex(KEY_ANTE)));
                 b.setPerPoint(c.getInt(c.getColumnIndex(KEY_PER_POINT)));
+                b.setFiltered(c.getInt(c.getColumnIndex(KEY_FILTERED)));
 
                 blinds.add(b);
             } while (c.moveToNext());
@@ -349,11 +390,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<Session> getSessions(int state) {
+        SQLiteDatabase db = this.getReadableDatabase();
         ArrayList<Session> sessions = new ArrayList<Session>();
 
         String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
                 KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " + TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " +
-                TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " + TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_BLINDS + "." + KEY_BLIND_ID + ", " +
+                TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " + TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_SESSION + "." + KEY_FILTERED + ", " +
+                TABLE_BLINDS + "." + KEY_BLIND_ID + ", " +
                 KEY_SMALL_BLIND + ", " + KEY_BIG_BLIND + ", " + KEY_STRADDLE + ", " + KEY_BRING_IN + ", " + KEY_ANTE + ", " + KEY_PER_POINT + ", " +
                 KEY_ENTRANTS + ", " + KEY_PLACED + ", " + KEY_NOTE + " FROM " + TABLE_SESSION + " INNER JOIN " + TABLE_STRUCTURE +
                 " ON " + TABLE_SESSION + "." + KEY_STRUCTURE + "=" + KEY_STRUCTURE_ID + " INNER JOIN " + TABLE_GAME +
@@ -362,11 +405,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_NOTE + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_TOURNAMENT +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_TOURNAMENT + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_CASH +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_BLINDS +
-                " ON " + TABLE_CASH + "." + KEY_BLINDS + "=" + TABLE_BLINDS + "." + KEY_BLIND_ID + " WHERE " + KEY_STATE + "=" + state + " ORDER BY " +
-                KEY_START + " DESC;";
+                " ON " + TABLE_CASH + "." + KEY_BLINDS + "=" + TABLE_BLINDS + "." + KEY_BLIND_ID + " WHERE " + KEY_STATE + "=" + state +
+                " AND " + TABLE_SESSION + "." + KEY_FILTERED + "=0 ORDER BY " + KEY_START + " DESC;";
 
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.rawQuery(query, null);
+
 
         //loop through rows and add to session if any results returned
         if (c.moveToFirst()) {
@@ -385,7 +428,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 if (!c.isNull(c.getColumnIndex(KEY_BLIND_ID))) {
                     s.setBlinds(new Blinds(c.getInt(c.getColumnIndex(KEY_BLIND_ID)), c.getInt(c.getColumnIndex(KEY_SMALL_BLIND)), c.getInt(c.getColumnIndex(KEY_BIG_BLIND)),
                             c.getInt(c.getColumnIndex(KEY_STRADDLE)), c.getInt(c.getColumnIndex(KEY_BRING_IN)), c.getInt(c.getColumnIndex(KEY_ANTE)),
-                            c.getInt(c.getColumnIndex(KEY_PER_POINT))));
+                            c.getInt(c.getColumnIndex(KEY_PER_POINT)), c.getInt(c.getColumnIndex(KEY_FILTERED))));
                 }
                 else {
                     s.setBlinds(null);
@@ -511,9 +554,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void toggleBreak(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
         String query = "SELECT * FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + id + " ORDER BY " + KEY_BREAK_ID + " ASC;";
 
-        SQLiteDatabase db = this.getWritableDatabase();
         Cursor c = db.rawQuery(query, null);
 
         Calendar cal = Calendar.getInstance();
@@ -539,6 +583,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void deleteSession(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_STATE + "=-1 WHERE " + KEY_SESSION_ID + "=" + id + ";";
         db.execSQL(query);
         db.close();
@@ -593,105 +638,4 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return blindSet;
     }
-
-    /*
-    public int getProfit() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        int total = 0;
-
-        String query = "SELECT sum(" + KEY_CASH_OUT + ") " + KEY_CASH_OUT + ", sum(" + KEY_BUY_IN + ") " + KEY_BUY_IN + " FROM " + TABLE_SESSION + " WHERE " +
-                KEY_STATE + "=0;";
-        Cursor c = db.rawQuery(query, null);
-
-        if (c.moveToFirst()) {
-            total = c.getInt(c.getColumnIndex(KEY_CASH_OUT)) - c.getInt(c.getColumnIndex(KEY_BUY_IN));
-        }
-
-        db.close();
-        return total;
-    }
-    */
-
-    /*
-    public double getTime() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        int total = 0;
-        String query = "SELECT " + KEY_START + ", " + KEY_END + " FROM " + TABLE_SESSION + " WHERE " + KEY_STATE + "=0;";
-
-        Cursor c = db.rawQuery(query, null);
-
-        if (c.moveToFirst()) {
-            do {
-                Calendar t1 = Calendar.getInstance();
-                Calendar t2 = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                try {
-                    t1.setTime(sdf.parse(c.getString(c.getColumnIndex(KEY_START))));
-                    t2.setTime(sdf.parse(c.getString(c.getColumnIndex(KEY_END))));
-                } catch (Exception e) {
-                    //fucking parse exception needed to be handled
-                }
-
-                int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis()) / 60000;
-                total += minutes;
-            } while (c.moveToNext());
-        }
-
-        int hours = total / 60;
-        int remainder = total % 60;
-
-        double time = (double) hours + ((double) remainder / 60); //gives hours and minutes as a decimal representation
-
-        total = 0;
-        String breakQuery = "SELECT * FROM " + TABLE_BREAK + " WHERE EXISTS (SELECT " + KEY_SESSION_ID + " FROM " + TABLE_SESSION + " WHERE " + KEY_STATE + "=0);";
-        Cursor bc = db.rawQuery(breakQuery, null);
-
-        if (bc.moveToFirst()) {
-            do {
-                Calendar b1 = Calendar.getInstance();
-                Calendar b2 = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                try {
-                    b1.setTime(sdf.parse(bc.getString(bc.getColumnIndex(KEY_START))));
-                    b2.setTime(sdf.parse(bc.getString(bc.getColumnIndex(KEY_END))));
-                } catch (Exception e) {
-                    //fucking parse exception needed to be handled
-                }
-
-                int minutes = (int) (b2.getTimeInMillis() - b1.getTimeInMillis()) / 60000;
-                total += minutes;
-            } while (c.moveToNext());
-        }
-
-        int breakHours = total / 60;
-        int breakRemainder = total % 60;
-
-        double breakTime = (double) breakHours + ((double) breakRemainder / 60); //gives hours and minutes as a decimal representation
-
-        db.close();
-        return time - breakTime;
-    }
-
-    public HashMap<String, BSGStats> getBSGStats() {
-        HashMap<String, BSGStats> statMap = new HashMap<String, BSGStats>();
-        ArrayList<Session> sessions  = getSessions(0);
-        String key;
-        BSGStats current;
-
-        for (Session s : sessions) {
-            if (s.getBlinds() != null) {
-                key = Integer.toString(s.getBlinds().getId()) + Integer.toString(s.getStructure().getId()) + Integer.toString(s.getGame().getId());
-                current = statMap.get(key);
-
-                if (current != null) {
-                    current.updateInfo(s);
-                } else {
-                    statMap.put(key, new BSGStats(s));
-                }
-            }
-        }
-
-        return statMap;
-    }
-    */
 }
