@@ -6,7 +6,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
+<!--
         <TextView
             android:id="@+id/type_header"
             android:text="Session Type"
@@ -30,7 +30,7 @@
                 android:text="Cash Games"
                 android:checked="true"/>
         </LinearLayout>
-
+-->
         <TextView
             android:id="@+id/blinds_header"
             android:text="Blinds"
@@ -89,11 +89,27 @@
             style="@style/header"/>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/datesWrapper"
-            android:orientation="vertical"
-            style="@style/subheader"
-            android:paddingBottom="@dimen/standard_padding">
+        android:id="@+id/datesWrapper"
+        android:orientation="horizontal"
+        style="@style/subheader"
+        android:paddingBottom="@dimen/standard_padding">
 
+
+        <Button
+            android:id="@+id/start_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".50"
+            android:hint="@string/start_date_hint"
+            android:onClick="showDatePickerDialog"/>
+
+        <Button
+            android:id="@+id/end_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".50"
+            android:hint="@string/end_date_hint"
+            android:onClick="showDatePickerDialog"/>
         </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"

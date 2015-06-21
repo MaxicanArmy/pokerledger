@@ -7,7 +7,9 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.Button;
 
+import org.pokerledger.pokerledgermobile.R;
 import org.pokerledger.pokerledgermobile.model.BSGStats;
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Break;
@@ -20,6 +22,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Max on 9/12/14.
@@ -29,7 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sessionManager";
 
     //database version
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     //table names
     private static final String TABLE_BLINDS = "blinds";
@@ -110,15 +114,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //CASH
     private static final String CREATE_TABLE_CASH = "CREATE TABLE " + TABLE_CASH + " (" + KEY_SESSION_ID + " INTEGER UNIQUE, " + KEY_BLINDS + " INTEGER);";
 
-    //GAME
+    //GAMES
     private static final String CREATE_TABLE_GAMES = "CREATE TABLE " + TABLE_GAME + " (" + KEY_GAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             KEY_GAME + " VARCHAR(40));";
 
-    //LOCATION
+    //LOCATIONS
     private static final String CREATE_TABLE_LOCATIONS = "CREATE TABLE " + TABLE_LOCATION + " (" + KEY_LOCATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_LOCATION + " VARCHAR(40));";
 
-    //NOTE
+    //NOTES
     private static final String CREATE_TABLE_NOTES = "CREATE TABLE " + TABLE_NOTE + " (" + KEY_SESSION_ID + " INTEGER, " + KEY_NOTE + " TEXT);";
 
     //SESSIONS
@@ -126,7 +130,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + KEY_START + " DATETIME, " + KEY_END + " DATETIME, " + KEY_BUY_IN + " INTEGER, " + KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, "
             + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_STATE + " INTEGER);";
 
-    //STRUCTURE
+    //STRUCTURES
     private static final String CREATE_TABLE_STRUCTURES = "CREATE TABLE " + TABLE_STRUCTURE + " (" + KEY_STRUCTURE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + KEY_STRUCTURE + " VARCHAR(40));";
 
@@ -236,6 +240,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         StructureValues = new ContentValues();
         StructureValues.put(KEY_GAME, "Big Easy");
         db.insert(TABLE_GAME, null, StructureValues);
+
+        //populate filter table
+        StructureValues.put(KEY_START, "NULL");
+        StructureValues.put(KEY_END, "NULL");
+        db.insert(TABLE_FILTER, null, StructureValues);
     }
 
     @Override
@@ -279,6 +288,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     db.execSQL("ALTER TABLE games ADD COLUMN filtered BOOLEAN DEFAULT 0");
                     db.execSQL("ALTER TABLE locations ADD COLUMN filtered BOOLEAN DEFAULT 0");
                     break;
+                case 6 :
+                    db.execSQL("INSERT INTO " + TABLE_FILTER + " (start, end) VALUES (NULL, NULL);");
             }
         }
     }
@@ -637,5 +648,58 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         return blindSet;
+    }
+
+    public HashMap<String, String> getFilterDates() {
+        HashMap<String, String> result = new HashMap<String, String>();
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_FILTER + " WHERE " + KEY_FILTER_ID + "=1;";
+        Cursor c;
+        int flag = 0;
+
+        do {
+            c = db.rawQuery(query, null);
+
+            if (c.moveToFirst()) {
+                if (c.isNull(c.getColumnIndex(KEY_START))) {
+                    db.execSQL("UPDATE " + TABLE_FILTER + " SET " + KEY_START + "=(SELECT MIN(" + KEY_START + ") FROM " + TABLE_SESSION + ");");
+                }
+
+                if (c.isNull(c.getColumnIndex(KEY_END))) {
+                    db.execSQL("UPDATE " + TABLE_FILTER + " SET " + KEY_END + "=(SELECT MAX(" + KEY_START + ") FROM " + TABLE_SESSION + ");");
+                }
+            }
+            flag++;
+        } while ((c.isNull(c.getColumnIndex(KEY_START)) || c.isNull(c.getColumnIndex(KEY_END))) && flag < 2); //without flag this will loop infinitely if there are no sessions
+
+        String startDateTime = c.getString(c.getColumnIndex(KEY_START));
+
+        Pattern DATE_PATTERN = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2})");
+        Matcher m = DATE_PATTERN.matcher(startDateTime);
+        String startDate;
+
+        if (m.find()) {
+            startDate = m.group(1);
+            result.put("start", startDate);
+        }
+        else {
+            result.put("start", "Start Date");
+        }
+
+        String endDateTime = c.getString(c.getColumnIndex(KEY_END));
+
+        m = DATE_PATTERN.matcher(endDateTime);
+        String endDate;
+
+        if (m.find()) {
+            endDate = m.group(1);
+            result.put("end", endDate);
+        }
+        else {
+            result.put("end", "End Date");
+        }
+
+        return result;
     }
 }

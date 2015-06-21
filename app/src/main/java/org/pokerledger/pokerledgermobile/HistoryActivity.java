@@ -53,7 +53,6 @@ public class HistoryActivity extends BaseActivity implements AdapterView.OnItemS
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Bundle b = savedInstanceState;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
 
