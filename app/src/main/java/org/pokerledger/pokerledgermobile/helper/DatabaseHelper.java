@@ -7,13 +7,12 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.Button;
 
-import org.pokerledger.pokerledgermobile.R;
-import org.pokerledger.pokerledgermobile.model.BSGStats;
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Break;
+import org.pokerledger.pokerledgermobile.model.FormatType;
 import org.pokerledger.pokerledgermobile.model.Game;
+import org.pokerledger.pokerledgermobile.model.GameFormat;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Structure;
@@ -22,8 +21,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by Max on 9/12/14.
@@ -33,7 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "sessionManager";
 
     //database version
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 1;
 
     //table names
     private static final String TABLE_BLINDS = "blinds";
@@ -45,17 +42,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_SESSION = "sessions";
     private static final String TABLE_STRUCTURE = "structures";
     private static final String TABLE_TOURNAMENT = "tournament";
-    private static final String TABLE_LOGIN_INFO = "info";
-    private static final String TABLE_FILTER = "filter";
+    private static final String TABLE_DATE_FILTER = "date_filter";
+    private static final String TABLE_FORMAT = "formats";
+    private static final String TABLE_FORMAT_TYPES = "format_types";
 
     //common column names
     private static final String KEY_SESSION_ID = "session_id";
-    private static final String KEY_START = "start";
-    private static final String KEY_END = "end";
+    private static final String KEY_START_DATE = "start_date";
+    private static final String KEY_START_TIME = "start_time";
+    private static final String KEY_END_DATE = "end_date";
+    private static final String KEY_END_TIME = "end_time";
     private static final String KEY_GAME = "game";
     private static final String KEY_LOCATION = "location";
     private static final String KEY_STRUCTURE = "structure";
     private static final String KEY_FILTERED = "filtered";
+    private static final String KEY_FORMAT = "format";
+    private static final String KEY_FORMAT_TYPE = "format_type";
 
     //BLINDS table - column names
     private static final String KEY_BLIND_ID = "blind_id";
@@ -93,58 +95,65 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_ENTRANTS = "entrants";
     private static final String KEY_PLACED = "placed";
 
-    //INFO table - column names
-    private static final String KEY_LOGIN_ID = "login_id";
-    private static final String KEY_USERNAME = "username";
-    private static final String KEY_PASSWORD = "password";
-
     //FILTER table - column names
     private static final String KEY_FILTER_ID = "filter_id";
 
+    //FORMAT table - column names
+    private static final String KEY_FORMAT_ID = "format_id";
+
+    //FORMAT_TYPE table - column names
+    private static final String KEY_FORMAT_TYPE_ID = "format_type_id";
+
     //create statements for tables
-    //BLINDS
-    private static final String CREATE_TABLE_BLINDS = "CREATE TABLE " + TABLE_BLINDS + " (" + KEY_BLIND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            KEY_SMALL_BLIND + " INTEGER, " + KEY_BIG_BLIND + " INTEGER, " + KEY_STRADDLE + " INTEGER, " + KEY_BRING_IN + " INTEGER, " +
-            KEY_ANTE + " INTEGER, " + KEY_PER_POINT + " INTEGER)";
 
-    //BREAKS
-    private static final String CREATE_TABLE_BREAKS = "CREATE TABLE " + TABLE_BREAK + " (" + KEY_BREAK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            KEY_SESSION_ID + " INTEGER, " + KEY_START + " DATETIME, " + KEY_END + " DATETIME);";
+    //SESSIONS
+    private static final String CREATE_TABLE_SESSIONS = "CREATE TABLE " + TABLE_SESSION + " (" + KEY_SESSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            KEY_START_DATE + " DATE, " + KEY_START_TIME + " TIME, " + KEY_END_DATE + " DATE, " + KEY_END_TIME + " TIME, " + KEY_BUY_IN + " INTEGER, " +
+            KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, " + KEY_GAME + " INTEGER, " + KEY_FORMAT + " INTEGER, " + KEY_LOCATION + " INTEGER, " +
+            KEY_STATE + " INTEGER, " + KEY_FILTERED + " INTEGER);";
 
-    //CASH
-    private static final String CREATE_TABLE_CASH = "CREATE TABLE " + TABLE_CASH + " (" + KEY_SESSION_ID + " INTEGER UNIQUE, " + KEY_BLINDS + " INTEGER);";
+    //STRUCTURES
+    private static final String CREATE_TABLE_STRUCTURES = "CREATE TABLE " + TABLE_STRUCTURE + " (" + KEY_STRUCTURE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_STRUCTURE + " VARCHAR(40), " + KEY_FILTERED + " INTEGER);";
 
     //GAMES
     private static final String CREATE_TABLE_GAMES = "CREATE TABLE " + TABLE_GAME + " (" + KEY_GAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            KEY_GAME + " VARCHAR(40));";
+            KEY_GAME + " VARCHAR(40), " + KEY_FILTERED + " INTEGER);";
+
+    //FORMATS
+    private static final String CREATE_TABLE_FORMATS = "CREATE TABLE " + TABLE_FORMAT + " (" + KEY_FORMAT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_FORMAT + " VARCHAR(40), " + KEY_FORMAT_TYPE + " INTEGER, " + KEY_FILTERED + " INTEGER);";
 
     //LOCATIONS
     private static final String CREATE_TABLE_LOCATIONS = "CREATE TABLE " + TABLE_LOCATION + " (" + KEY_LOCATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_LOCATION + " VARCHAR(40));";
+            + KEY_LOCATION + " VARCHAR(40), " + KEY_FILTERED + " INTEGER);";
+
+    //BLINDS
+    private static final String CREATE_TABLE_BLINDS = "CREATE TABLE " + TABLE_BLINDS + " (" + KEY_BLIND_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            KEY_SMALL_BLIND + " INTEGER, " + KEY_BIG_BLIND + " INTEGER, " + KEY_STRADDLE + " INTEGER, " + KEY_BRING_IN + " INTEGER, " +
+            KEY_ANTE + " INTEGER, " + KEY_PER_POINT + " INTEGER, " + KEY_FILTERED + " INTEGER)";
+
+    //BREAKS
+    private static final String CREATE_TABLE_BREAKS = "CREATE TABLE " + TABLE_BREAK + " (" + KEY_BREAK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            KEY_SESSION_ID + " INTEGER, " + KEY_START_DATE + " DATE, " + KEY_START_TIME + " TIME, " + KEY_END_DATE + " DATE, " + KEY_END_TIME + " TIME);";
 
     //NOTES
     private static final String CREATE_TABLE_NOTES = "CREATE TABLE " + TABLE_NOTE + " (" + KEY_SESSION_ID + " INTEGER, " + KEY_NOTE + " TEXT);";
 
-    //SESSIONS
-    private static final String CREATE_TABLE_SESSIONS = "CREATE TABLE " + TABLE_SESSION + " (" + KEY_SESSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_START + " DATETIME, " + KEY_END + " DATETIME, " + KEY_BUY_IN + " INTEGER, " + KEY_CASH_OUT + " INTEGER, " + KEY_STRUCTURE + " INTEGER, "
-            + KEY_GAME + " INTEGER, " + KEY_LOCATION + " INTEGER, " + KEY_STATE + " INTEGER);";
-
-    //STRUCTURES
-    private static final String CREATE_TABLE_STRUCTURES = "CREATE TABLE " + TABLE_STRUCTURE + " (" + KEY_STRUCTURE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_STRUCTURE + " VARCHAR(40));";
+    //CASH
+    private static final String CREATE_TABLE_CASH = "CREATE TABLE " + TABLE_CASH + " (" + KEY_SESSION_ID + " INTEGER UNIQUE, " + KEY_BLINDS + " INTEGER);";
 
     //TOURNAMENT
     private static final String CREATE_TABLE_TOURNAMENT = "CREATE TABLE " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + " INTEGER UNIQUE, " + KEY_ENTRANTS + " INTEGER, "
             + KEY_PLACED + " INTEGER);";
 
-    //INFO
-    private static final String CREATE_TABLE_LOGIN_INFO = "CREATE TABLE " + TABLE_LOGIN_INFO + " (" + KEY_LOGIN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_USERNAME + " VARCHAR(12), " + KEY_PASSWORD + " VARCHAR(12));";
+    //FORMAT_TYPES
+    private static final String CREATE_TABLE_FORMAT_TYPES = "CREATE TABLE " + TABLE_FORMAT_TYPES + " (" + KEY_FORMAT_TYPE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_FORMAT_TYPE + " VARCHAR(40));";
 
     //FILTER
-    private static final String CREATE_TABLE_FILTER = "CREATE TABLE " + TABLE_FILTER + " (" + KEY_FILTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_START + " DATETIME, " + KEY_END + " DATETIME);";
+    private static final String CREATE_TABLE_DATE_FILTER = "CREATE TABLE " + TABLE_DATE_FILTER + " (" + KEY_FILTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + KEY_START_DATE + " DATE, " + KEY_START_TIME + " TIME, " + KEY_END_DATE + " DATE, " + KEY_END_TIME + " TIME);";
 
     //constructor
     public DatabaseHelper(Context context) {
@@ -163,88 +172,112 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_STRUCTURES);
         db.execSQL(CREATE_TABLE_TOURNAMENT);
         db.execSQL(CREATE_TABLE_BLINDS);
-        db.execSQL(CREATE_TABLE_LOGIN_INFO);
-        db.execSQL(CREATE_TABLE_FILTER);
+        db.execSQL(CREATE_TABLE_DATE_FILTER);
+        db.execSQL(CREATE_TABLE_FORMATS);
+        db.execSQL(CREATE_TABLE_FORMAT_TYPES);
 
-        ContentValues StructureValues;
+        ContentValues values;
 
         //populate structure table
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_STRUCTURE, "No Limit");
-        db.insert(TABLE_STRUCTURE, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_STRUCTURE, "Pot Limit");
-        db.insert(TABLE_STRUCTURE, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_STRUCTURE, "Fixed Limit");
-        db.insert(TABLE_STRUCTURE, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_STRUCTURE, "Mixed Limit");
-        db.insert(TABLE_STRUCTURE, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_STRUCTURE, "Points");
-        db.insert(TABLE_STRUCTURE, null, StructureValues);
+        values = new ContentValues();
+        values.put(KEY_STRUCTURE, "No Limit");
+        db.insert(TABLE_STRUCTURE, null, values);
+        values = new ContentValues();
+        values.put(KEY_STRUCTURE, "Pot Limit");
+        db.insert(TABLE_STRUCTURE, null, values);
+        values = new ContentValues();
+        values.put(KEY_STRUCTURE, "Fixed Limit");
+        db.insert(TABLE_STRUCTURE, null, values);
+        values = new ContentValues();
+        values.put(KEY_STRUCTURE, "Mixed Limit");
+        db.insert(TABLE_STRUCTURE, null, values);
+        values = new ContentValues();
+        values.put(KEY_STRUCTURE, "Points");
+        db.insert(TABLE_STRUCTURE, null, values);
 
         //populate game table
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Hold'em");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Omaha");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Omaha HiLo");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Stud");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Stud HiLo");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Razz");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "HORSE");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "HOSE");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "8 Game");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Mixed");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "2-7 Lowball");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "5 Card Draw");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Badugi");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Pineapple");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Open Face Chinese");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Chinese Pineapple");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Big O");
-        db.insert(TABLE_GAME, null, StructureValues);
-        StructureValues = new ContentValues();
-        StructureValues.put(KEY_GAME, "Big Easy");
-        db.insert(TABLE_GAME, null, StructureValues);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Hold'em");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Omaha");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Omaha HiLo");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Stud");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Stud HiLo");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Razz");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "HORSE");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "HOSE");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "8 Game");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Mixed");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "2-7 Lowball");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "5 Card Draw");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Badugi");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Pineapple");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Open Face Chinese");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Chinese Pineapple");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Big O");
+        db.insert(TABLE_GAME, null, values);
+        values = new ContentValues();
+        values.put(KEY_GAME, "Big Easy");
+        db.insert(TABLE_GAME, null, values);
 
         //populate filter table
-        StructureValues.put(KEY_START, "NULL");
-        StructureValues.put(KEY_END, "NULL");
-        db.insert(TABLE_FILTER, null, StructureValues);
+        values = new ContentValues();
+        values.put(KEY_START_DATE, "NULL");
+        values.put(KEY_START_TIME, "NULL");
+        values.put(KEY_END_DATE, "NULL");
+        values.put(KEY_END_TIME, "NULL");
+        db.insert(TABLE_DATE_FILTER, null, values);
+
+        //populate format_types table
+        values = new ContentValues();
+        values.put(KEY_FORMAT_TYPE, "Cash Game");
+        db.insert(TABLE_FORMAT_TYPES, null, values);
+        values = new ContentValues();
+        values.put(KEY_FORMAT_TYPE, "Tournament");
+        db.insert(TABLE_FORMAT_TYPES, null, values);
+
+        //populate formats table
+        values = new ContentValues();
+        values.put(KEY_FORMAT, "Full Ring");
+        values.put(KEY_FORMAT_TYPE, 1);
+        values.put(KEY_FILTERED, 0);
+        db.insert(TABLE_FORMAT, null, values);
+        values = new ContentValues();
+        values.put(KEY_FORMAT, "Full Ring");
+        values.put(KEY_FORMAT_TYPE, 2);
+        values.put(KEY_FILTERED, 0);
+        db.insert(TABLE_FORMAT, null, values);
     }
 
     @Override
@@ -253,43 +286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         {
             switch(i)
             {
-                case 1 :
-                    db.execSQL("CREATE TABLE sessions_copy (session_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                            "start DATETIME, end DATETIME, buy_in INTEGER, cash_out INTEGER, structure INTEGER, game INTEGER, location INTEGER, state INTEGER)");
-                    db.execSQL("INSERT INTO sessions_copy SELECT session_id, start, end, buy_in, cash_out, structure, game, location, state " +
-                            "FROM sessions");
-                    db.execSQL("DROP TABLE sessions");
-                    db.execSQL("CREATE TABLE sessions (session_id INTEGER PRIMARY KEY AUTOINCREMENT, start DATETIME, end DATETIME, buy_in INTEGER, " +
-                            "cash_out INTEGER, structure INTEGER, game INTEGER, location INTEGER, state INTEGER)");
-                    db.execSQL("INSERT INTO sessions SELECT session_id, start, end, buy_in, cash_out, structure, game, location, state " +
-                            "FROM sessions_copy");
-                    db.execSQL("DROP TABLE sessions_copy");
-                    break;
-                case 2 :
-                    db.execSQL("DROP TABLE sync");
-                    break;
-                case 3 :
-                    db.execSQL(CREATE_TABLE_LOGIN_INFO);
-                    break;
-                case 4 :
-                    db.execSQL(CREATE_TABLE_FILTER);
-                    db.execSQL("ALTER TABLE sessions ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE blinds ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE structures ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE games ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE locations ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    break;
-                case 5 :
-                    db.execSQL("DROP TABLE sync");
-                    db.execSQL(CREATE_TABLE_FILTER);
-                    db.execSQL("ALTER TABLE sessions ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE blinds ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE structures ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE games ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    db.execSQL("ALTER TABLE locations ADD COLUMN filtered BOOLEAN DEFAULT 0");
-                    break;
-                case 6 :
-                    db.execSQL("INSERT INTO " + TABLE_FILTER + " (start, end) VALUES (NULL, NULL);");
+
             }
         }
     }
@@ -321,7 +318,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 structures.add(s);
             } while (c.moveToNext());
         }
-        db.close();
+        c.close();
         return structures;
     }
 
@@ -344,7 +341,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 games.add(g);
             } while (c.moveToNext());
         }
-        db.close();
+        c.close();
         return games;
     }
 
@@ -367,7 +364,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 locations.add(l);
             } while (c.moveToNext());
         }
-        db.close();
+        c.close();
         return locations;
     }
 
@@ -396,7 +393,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 blinds.add(b);
             } while (c.moveToNext());
         }
-        db.close();
+        c.close();
         return blinds;
     }
 
@@ -404,35 +401,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         ArrayList<Session> sessions = new ArrayList<Session>();
 
-        String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " + TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " +
-                TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " + TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_SESSION + "." + KEY_FILTERED + ", " +
-                TABLE_BLINDS + "." + KEY_BLIND_ID + ", " +
+        String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME + ", " +
+                KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_FORMAT_ID + ", " + TABLE_FORMAT + "." + KEY_FORMAT + ", " + TABLE_FORMAT + "." + KEY_FILTERED + ", " +
+                KEY_FORMAT_TYPE_ID + ", " + TABLE_FORMAT_TYPES + "." + KEY_FORMAT_TYPE + ", " + KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " +
+                TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " + TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " +
+                TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_SESSION + "." + KEY_FILTERED + ", " + TABLE_BLINDS + "." + KEY_BLIND_ID + ", " +
                 KEY_SMALL_BLIND + ", " + KEY_BIG_BLIND + ", " + KEY_STRADDLE + ", " + KEY_BRING_IN + ", " + KEY_ANTE + ", " + KEY_PER_POINT + ", " +
                 KEY_ENTRANTS + ", " + KEY_PLACED + ", " + KEY_NOTE + " FROM " + TABLE_SESSION + " INNER JOIN " + TABLE_STRUCTURE +
                 " ON " + TABLE_SESSION + "." + KEY_STRUCTURE + "=" + KEY_STRUCTURE_ID + " INNER JOIN " + TABLE_GAME +
-                " ON " + TABLE_SESSION + "." + KEY_GAME + "=" + KEY_GAME_ID +" INNER JOIN " + TABLE_LOCATION +
-                " ON " + TABLE_SESSION + "." + KEY_LOCATION + "=" + KEY_LOCATION_ID + " LEFT JOIN " + TABLE_NOTE +
+                " ON " + TABLE_SESSION + "." + KEY_GAME + "=" + KEY_GAME_ID + " INNER JOIN " + TABLE_LOCATION +
+                " ON " + TABLE_SESSION + "." + KEY_LOCATION + "=" + KEY_LOCATION_ID + " INNER JOIN " + TABLE_FORMAT +
+                " ON " + TABLE_SESSION + "." + KEY_FORMAT + "=" + KEY_FORMAT_ID + " INNER JOIN " + TABLE_FORMAT_TYPES +
+                " ON " + TABLE_FORMAT + "." + KEY_FORMAT_TYPE + "=" + TABLE_FORMAT_TYPES + "." + KEY_FORMAT_TYPE_ID + " LEFT JOIN " + TABLE_NOTE +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_NOTE + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_TOURNAMENT +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_TOURNAMENT + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_CASH +
                 " ON " + TABLE_SESSION + "." + KEY_SESSION_ID + "=" + TABLE_CASH + "." + KEY_SESSION_ID + " LEFT JOIN " + TABLE_BLINDS +
                 " ON " + TABLE_CASH + "." + KEY_BLINDS + "=" + TABLE_BLINDS + "." + KEY_BLIND_ID + " WHERE " + KEY_STATE + "=" + state +
-                " AND " + TABLE_SESSION + "." + KEY_FILTERED + "=0 ORDER BY " + KEY_START + " DESC;";
+                " AND " + TABLE_SESSION + "." + KEY_FILTERED + "=0 ORDER BY " + KEY_START_DATE + " DESC, " + KEY_START_TIME + " DESC;";
 
+        Log.v("getAllSessionsQuery", query);
         Cursor c = db.rawQuery(query, null);
-
 
         //loop through rows and add to session if any results returned
         if (c.moveToFirst()) {
             do {
                 Session s = new Session();
                 s.setId(c.getInt(c.getColumnIndex(KEY_SESSION_ID)));
-                s.setStart(c.getString(c.getColumnIndex(KEY_START)));
-                s.setEnd(c.getString(c.getColumnIndex(KEY_END)));
+                s.setStartDate(c.getString(c.getColumnIndex(KEY_START_DATE)));
+                s.setStartTime(c.getString(c.getColumnIndex(KEY_START_TIME)));
+                s.setEndDate(c.getString(c.getColumnIndex(KEY_END_DATE)));
+                s.setEndTime(c.getString(c.getColumnIndex(KEY_END_TIME)));
                 s.setBuyIn(c.getInt(c.getColumnIndex(KEY_BUY_IN)));
                 s.setCashOut(c.getInt(c.getColumnIndex(KEY_CASH_OUT)));
                 s.setStructure(new Structure(c.getInt(c.getColumnIndex(KEY_STRUCTURE_ID)), c.getString(c.getColumnIndex(KEY_STRUCTURE))));
                 s.setGame(new Game(c.getInt(c.getColumnIndex(KEY_GAME_ID)), c.getString(c.getColumnIndex(KEY_GAME))));
+                s.setFormat(new GameFormat(c.getInt(c.getColumnIndex(KEY_FORMAT_ID)), c.getString(c.getColumnIndex(KEY_FORMAT)),
+                        new FormatType(c.getInt(c.getColumnIndex(KEY_FORMAT_TYPE_ID)), c.getString(c.getColumnIndex(KEY_FORMAT_TYPE)))));
                 s.setLocation(new Location(c.getInt(c.getColumnIndex(KEY_LOCATION_ID)), c.getString(c.getColumnIndex(KEY_LOCATION))));
                 s.setState(c.getInt(c.getColumnIndex(KEY_STATE)));
 
@@ -463,16 +467,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 if (b.moveToFirst()) {
                     ArrayList<Break> breaks = new ArrayList<Break>();
                     do {
-                        breaks.add(new Break(b.getInt(b.getColumnIndex(KEY_BREAK_ID)), b.getString(b.getColumnIndex(KEY_START)), b.getString(b.getColumnIndex(KEY_END))));
+                        breaks.add(new Break(b.getInt(b.getColumnIndex(KEY_BREAK_ID)), b.getString(b.getColumnIndex(KEY_START_DATE)), b.getString(b.getColumnIndex(KEY_START_TIME)),
+                                b.getString(b.getColumnIndex(KEY_END_DATE)), b.getString(b.getColumnIndex(KEY_END_TIME))));
                     } while (b.moveToNext());
 
                     s.setBreaks(breaks);
                 }
-
+                b.close();
                 sessions.add(s);
             } while (c.moveToNext());
         }
-        db.close();
+        c.close();
 
         return sessions;
     }
@@ -482,10 +487,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         if (s.getId() == 0) {
-            String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START + ", " + KEY_END + ", " + KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " +
-                    KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_LOCATION + ", " + KEY_STATE + ") VALUES ('" + s.getStart() +
-                    "', '" + s.getEnd() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() +
-                    ", " + s.getLocation().getId() + ", " + s.getState() + ");";
+            String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME + ", " +
+                    KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_FORMAT + ", " + KEY_LOCATION + ", " + KEY_STATE + ") VALUES ('" + s.getStartDate() +
+                    "', '" + s.getStartTime() + "', '" + s.getEndDate() + "', '" + s.getEndTime() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " +
+                    s.getStructure().getId() + ", " + s.getGame().getId() + ", " + s.getFormat().getId() + ", " + s.getLocation().getId() + ", " + s.getState() + ");";
 
             db.execSQL(query);
 
@@ -503,8 +508,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 if (s.getBreaks() != null) {
                     ArrayList<Break> breaks = s.getBreaks();
                     for (int i = 0; i < breaks.size(); i++) {
-                        db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ") VALUES (" + session_id + ", '" +
-                                breaks.get(i).getStart() + "', '" + breaks.get(i).getEnd() + "');");
+                        db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE +
+                                ", " + KEY_END_TIME + ") VALUES (" + session_id + ", '" + breaks.get(i).getStartDate() + "', '" + breaks.get(i).getStartTime() +
+                                "', " + breaks.get(i).getEndDate() + "', '" + breaks.get(i).getEndTime() + "');");
                     }
                 }
 
@@ -515,11 +521,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } else {
                 flag = 0;
             }
+
+            c.close();
         } else if (s.getId() > 0) {
-            String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_START + "='" + s.getStart() + "', " + KEY_END + "='" + s.getEnd() + "', " + KEY_BUY_IN + "=" +
+            String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_START_DATE + "='" + s.getStartDate() + "', " + KEY_START_TIME + "='" + s.getStartTime() + "' " +
+                    KEY_END_DATE + "='" + s.getEndDate() + "', " + KEY_END_TIME + "='" + s.getEndTime() + "' " + KEY_BUY_IN + "=" +
                     s.getBuyIn() + ", " + KEY_CASH_OUT + "=" + s.getCashOut() + ", " + KEY_STRUCTURE + "=" + s.getStructure().getId() + ", " + KEY_GAME +
-                    "=" + s.getGame().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " + KEY_STATE + "=" + s.getState() + " WHERE " +
-                    KEY_SESSION_ID + "=" + s.getId() + ";";
+                    "=" + s.getGame().getId() + ", " + KEY_FORMAT + "=" + s.getFormat().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " +
+                    KEY_STATE + "=" + s.getState() + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";";
 
             db.execSQL(query);
 
@@ -545,8 +554,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL("DELETE FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
                 ArrayList<Break> breaks = s.getBreaks();
                 for (int i = 0; i < breaks.size(); i++) {
-                    db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ") VALUES (" + s.getId() + ", '" +
-                            breaks.get(i).getStart() + "', '" + breaks.get(i).getEnd() + "');");
+                    db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME +
+                            ") VALUES (" + s.getId() + ", '" + breaks.get(i).getStartDate() + "', '" + breaks.get(i).getStartTime() + "', '" + breaks.get(i).getEndDate() +
+                            ", " + breaks.get(i).getEndTime() + "');");
                 }
             }
 
@@ -574,22 +584,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Calendar cal = Calendar.getInstance();
 
         DecimalFormat df = new DecimalFormat("00");
-        String currentDateTime = cal.get(Calendar.YEAR) + "-" + df.format(cal.get(Calendar.MONTH) + 1) + "-" + df.format(cal.get(Calendar.DAY_OF_MONTH)) + " " +
-                df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE));
+        String currentDate = cal.get(Calendar.YEAR) + "-" + df.format(cal.get(Calendar.MONTH) + 1) + "-" + df.format(cal.get(Calendar.DAY_OF_MONTH));
+        String currentTime = df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE));
 
         if (c.moveToLast()) {
-            if (c.isNull(c.getColumnIndex(KEY_END))) {
-                String setBreakEndQuery = "UPDATE " + TABLE_BREAK + " SET " + KEY_END + "='" + currentDateTime + "' WHERE " + KEY_SESSION_ID + "=" +
-                        c.getInt(c.getColumnIndex(KEY_SESSION_ID)) + ";";
+            if (c.isNull(c.getColumnIndex(KEY_END_DATE))) {
+                String setBreakEndQuery = "UPDATE " + TABLE_BREAK + " SET " + KEY_END_DATE + "='" + currentDate + "', " + KEY_END_TIME + "='" + currentTime +
+                        "' WHERE " + KEY_SESSION_ID + "=" + c.getInt(c.getColumnIndex(KEY_SESSION_ID)) + ";";
                 db.execSQL(setBreakEndQuery);
                 return;
             }
         }
 
-        String insertBreakQuery = "INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START + ", " + KEY_END + ") VALUES (" + id + ", '" +
-                currentDateTime + "', null);";
+        String insertBreakQuery = "INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " +
+                KEY_END_DATE + ", " + KEY_END_TIME + ") VALUES (" + id + ", '" + currentDate + "', '" + currentTime + "', null, null);";
         db.execSQL(insertBreakQuery);
-        db.close();
+        c.close();
     }
 
     public void deleteSession(int id) {
@@ -644,17 +654,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             if (blind_id != -1) {
                 blindSet.setId((int) blind_id);
             }
-            db.close();
         }
 
+        c.close();
         return blindSet;
     }
 
     public HashMap<String, String> getFilterDates() {
         HashMap<String, String> result = new HashMap<String, String>();
+
+        /*
+
         SQLiteDatabase db = this.getWritableDatabase();
 
-        String query = "SELECT * FROM " + TABLE_FILTER + " WHERE " + KEY_FILTER_ID + "=1;";
+        String query = "SELECT * FROM " + TABLE_DATE_FILTER + " WHERE " + KEY_FILTER_ID + "=1;";
+
         Cursor c;
         int flag = 0;
 
@@ -662,7 +676,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             c = db.rawQuery(query, null);
 
             if (c.moveToFirst()) {
-                if (c.isNull(c.getColumnIndex(KEY_START))) {
+                if (c.isNull(c.getColumnIndex(KEY_START_DATE))) {
                     db.execSQL("UPDATE " + TABLE_FILTER + " SET " + KEY_START + "=(SELECT MIN(" + KEY_START + ") FROM " + TABLE_SESSION + ");");
                 }
 
@@ -699,7 +713,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         else {
             result.put("end", "End Date");
         }
-
+        c.close();
+*/
         return result;
     }
 }

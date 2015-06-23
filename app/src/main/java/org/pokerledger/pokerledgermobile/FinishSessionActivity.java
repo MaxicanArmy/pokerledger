@@ -53,6 +53,7 @@ public class FinishSessionActivity extends SessionActivity  {
                 ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(this.current.getEntrants()));
             }
 
+            /*
             String startDateTime = this.current.getStart();
 
             Pattern DATE_PATTERN = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2})");
@@ -74,6 +75,12 @@ public class FinishSessionActivity extends SessionActivity  {
                 startTime = m.group(1);
                 startTimeBtn.setHint(startTime);
             }
+            */
+            ((Button) findViewById(R.id.start_date)).setHint(this.current.getStartDate());
+            ((Button) findViewById(R.id.start_time)).setHint(this.current.getStartTime());
+
+            ((Button) findViewById(R.id.end_date)).setHint(this.current.getEndDate());
+            ((Button) findViewById(R.id.end_time)).setHint(this.current.getEndTime());
 
             Calendar cal = Calendar.getInstance();
             DecimalFormat df = new DecimalFormat("00");
@@ -164,7 +171,8 @@ public class FinishSessionActivity extends SessionActivity  {
             return;
         }
 
-        this.current.setStart(startDate + " " + startTime);
+        this.current.setStartDate(startDate);
+        this.current.setStartTime(startTime);
 
         String endDate = ((Button) findViewById(R.id.end_date)).getHint().toString();
 
@@ -180,9 +188,10 @@ public class FinishSessionActivity extends SessionActivity  {
             return;
         }
 
-        this.current.setEnd(endDate + " " + endTime);
+        this.current.setEndDate(endDate);
+        this.current.setEndTime(endTime);
 
-        if (this.current.getEnd().compareTo(this.current.getStart()) <= 0) {
+        if ((this.current.getEndDate() + this.current.getEndTime()).compareTo(this.current.getStartDate() + this.current.getStartTime()) <= 0) {
             Toast.makeText(this, "Session end time must be after start time.", Toast.LENGTH_SHORT).show();
             return;
         }

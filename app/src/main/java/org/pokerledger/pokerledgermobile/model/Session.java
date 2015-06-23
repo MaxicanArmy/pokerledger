@@ -9,39 +9,28 @@ import java.util.Calendar;
  * Created by Max on 9/12/14.
  */
 public class Session {
-    private int id = 0;
-    private String start = "";
-    private String end = "";
-    private int buyIn = 0;
-    private int cashOut = 0;
+    private int id, buyIn, cashOut, entrants, placed, state = 0;
+    private String startDate, startTime, endDate, endTime, note = "";
     private Structure structure = new Structure();
     private Game game = new Game();
+    private GameFormat format = new GameFormat();
     private Location location = new Location();
-    private int entrants = 0;
-    private int placed = 0;
     private Blinds blinds = new Blinds();
-    private String note = "";
     private ArrayList<Break> breaks = new ArrayList<Break>();
-    private int state = 0;
 
     //constructors
     public Session() {}
 
-    public Session(String s, String e, int bi, int co, Structure str, Game game, Location loc, int state) {
-        this.start = s;
-        this.end = e;
-        this.buyIn = bi;
-        this.cashOut = co;
-        this.structure = str;
-        this.game = game;
-        this.location = loc;
-        this.state = state;
+    public Session(String sd, String st, String ed, String et, int bi, int co, Structure str, Game game, Location loc, int state) {
+        this(0, sd, st, ed, et, bi, co, str, game, loc, state);
     }
 
-    public Session(int id, String s, String e, int bi, int co, Structure str, Game game, Location loc, int state) {
+    public Session(int id, String sd, String st, String ed, String et, int bi, int co, Structure str, Game game, Location loc, int state) {
         this.id = id;
-        this.start = s;
-        this.end = e;
+        this.startDate = sd;
+        this.startTime = st;
+        this.endDate = ed;
+        this.endTime = et;
         this.buyIn = bi;
         this.cashOut = co;
         this.structure = str;
@@ -52,7 +41,7 @@ public class Session {
 
     @Override
     public String toString() {
-        return Integer.toString(this.id) + " " + this.start + " " + this.location.getLocation();
+        return Integer.toString(this.id) + " " + this.startDate + " " + this.startTime + " " + this.location.getLocation();
     }
 
     //setters
@@ -60,12 +49,20 @@ public class Session {
         this.id = i;
     }
 
-    public void setStart(String c) {
-        this.start = c;
+    public void setStartDate(String s) {
+        this.startDate = s;
     }
 
-    public void setEnd(String c) {
-        this.end = c;
+    public void setStartTime(String s) {
+        this.startTime = s;
+    }
+
+    public void setEndDate(String s) {
+        this.endDate = s;
+    }
+
+    public void setEndTime(String s) {
+        this.endTime = s;
     }
 
     public void setBuyIn(int i) {
@@ -82,6 +79,10 @@ public class Session {
 
     public void setGame(Game i) {
         this.game = i;
+    }
+
+    public void setFormat(GameFormat f) {
+        this.format = f;
     }
 
     public void setLocation(Location i) {
@@ -117,12 +118,20 @@ public class Session {
         return this.id;
     }
 
-    public String getStart() {
-        return this.start;
+    public String getStartDate() {
+        return this.startDate;
     }
 
-    public String getEnd() {
-        return this.end;
+    public String getStartTime() {
+        return this.startTime;
+    }
+
+    public String getEndDate() {
+        return this.endDate;
+    }
+
+    public String getEndTime() {
+        return this.endTime;
     }
 
     public int getBuyIn() {
@@ -139,6 +148,10 @@ public class Session {
 
     public Game getGame() {
         return this.game;
+    }
+
+    public GameFormat getFormat() {
+        return this.format;
     }
 
     public Location getLocation() {
@@ -171,7 +184,7 @@ public class Session {
 
     //other
     public boolean onBreak() {
-        if (this.breaks == null || this.breaks.size() == 0 || !(this.breaks.get(this.breaks.size() - 1).getEnd().equals(""))) {
+        if (this.breaks.size() == 0 || !(this.breaks.get(this.breaks.size() - 1).getEndDate().equals(""))) {
             return false;
         }
         return true;
@@ -180,10 +193,10 @@ public class Session {
     public void breakEnd() {
         Calendar cal = Calendar.getInstance();
         DecimalFormat df = new DecimalFormat("00");
-        String datetime = cal.get(Calendar.YEAR) + "-" + df.format(cal.get(Calendar.MONTH) + 1) + "-" + df.format(cal.get(Calendar.DAY_OF_MONTH)) + " " + df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE));
         int position = this.breaks.size() - 1;
 
-        this.breaks.get(position).setEnd(datetime);
+        this.breaks.get(position).setEndDate(cal.get(Calendar.YEAR) + "-" + df.format(cal.get(Calendar.MONTH) + 1) + "-" + df.format(cal.get(Calendar.DAY_OF_MONTH)));
+        this.breaks.get(position).setEndTime(df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE)));
     }
 
     public double getTimePlayed() {  //returns time played as a double [Hours.Minutes]
@@ -191,8 +204,8 @@ public class Session {
         Calendar t2 = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         try {
-            t1.setTime(sdf.parse(this.start));
-            t2.setTime(sdf.parse(this.end));
+            t1.setTime(sdf.parse(this.startDate + " " + this.startTime));
+            t2.setTime(sdf.parse(this.endDate + " " + this.endTime));
         } catch (Exception e) {
             //fucking parse exception needs to be handled
         }
@@ -208,10 +221,10 @@ public class Session {
                 Calendar be = Calendar.getInstance();
                 for (Break b : this.breaks) {
                     try {
-                        bs.setTime(sdf.parse(b.getStart()));
-                        be.setTime(sdf.parse(b.getEnd()));
+                        bs.setTime(sdf.parse(b.getStartDate() + " " + b.getStartTime()));
+                        be.setTime(sdf.parse(b.getEndDate() + " " + b.getEndTime()));
                     } catch (Exception e) {
-                        //fucking parse exception needed to be handled
+                        //make an alert message here i guess
                     }
 
                     breakMinutes += (int) (be.getTimeInMillis() - bs.getTimeInMillis()) / 60000;

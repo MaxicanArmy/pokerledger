@@ -89,27 +89,26 @@
             style="@style/header"/>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/datesWrapper"
-        android:orientation="horizontal"
-        style="@style/subheader"
-        android:paddingBottom="@dimen/standard_padding">
+            android:id="@+id/datesWrapper"
+            android:orientation="horizontal"
+            style="@style/subheader"
+            android:paddingBottom="@dimen/standard_padding">
 
+            <Button
+                android:id="@+id/start_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".50"
+                android:hint="@string/start_date_hint"
+                android:onClick="showDatePickerDialog"/>
 
-        <Button
-            android:id="@+id/start_date"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".50"
-            android:hint="@string/start_date_hint"
-            android:onClick="showDatePickerDialog"/>
-
-        <Button
-            android:id="@+id/end_date"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".50"
-            android:hint="@string/end_date_hint"
-            android:onClick="showDatePickerDialog"/>
+            <Button
+                android:id="@+id/end_date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".50"
+                android:hint="@string/end_date_hint"
+                android:onClick="showDatePickerDialog"/>
         </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"

@@ -40,7 +40,7 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         String blinds = "Tournament";
         //TextView txtBlinds = (TextView) rowView.findViewById(R.id.blinds);
 
-        txtLocation.setText(active.get(position).getLocation().getLocation() + " " + active.get(position).getStart());
+        txtLocation.setText(active.get(position).getLocation().getLocation() + " " + active.get(position).getStartDate() + " " + active.get(position).getStartTime());
 
         try {
             blinds = active.get(position).getBlinds().toString();
@@ -52,8 +52,8 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
         Calendar t2 = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         try {
-            t1.setTime(sdf.parse(active.get(position).getStart()));
-            t2.setTime(sdf.parse(active.get(position).getEnd()));
+            t1.setTime(sdf.parse(active.get(position).getStartDate() + " " + active.get(position).getStartTime()));
+            t2.setTime(sdf.parse(active.get(position).getEndDate() + " " + active.get(position).getEndTime()));
         } catch (Exception e) {
             //fucking parse exception needed to be handled
         }
@@ -70,8 +70,8 @@ public class HistoryListAdapter extends ArrayAdapter<Session> {
                     Calendar bs = Calendar.getInstance();
                     Calendar be = Calendar.getInstance();
                     try {
-                        bs.setTime(sdf.parse(b.getStart()));
-                        be.setTime(sdf.parse(b.getEnd()));
+                        bs.setTime(sdf.parse(b.getStartDate() + " " + b.getStartTime()));
+                        be.setTime(sdf.parse(b.getEndDate() + " " + b.getEndTime()));
                     } catch (Exception e) {
                         //fucking parse exception needed to be handled
                     }

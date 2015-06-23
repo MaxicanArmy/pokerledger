@@ -88,7 +88,8 @@ public class ActiveSessionActivity extends SessionActivity {
             return;
         }
 
-        this.current.setStart(startDate + " " + startTime);
+        this.current.setStartDate(startDate);
+        this.current.setStartTime(startTime);
 
         String note = ((EditText) findViewById(R.id.note)).getText().toString();
 

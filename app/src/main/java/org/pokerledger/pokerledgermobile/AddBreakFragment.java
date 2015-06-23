@@ -71,11 +71,11 @@ public class AddBreakFragment extends DialogFragment {
                     Toast.makeText(a, "End date/time must be after start date/time.", Toast.LENGTH_SHORT).show();
                 }
                 //2. Break starts before session start datetime
-                else if (start.compareTo(a.current.getStart()) < 0) {
+                else if (start.compareTo(a.current.getStartDate() + " " + a.current.getStartTime()) < 0) {
                     Toast.makeText(a, "The break can't start before the session's start date/time.", Toast.LENGTH_SHORT).show();
                 }
                 //3. Break ends after session end datetime
-                else if (end.compareTo(a.current.getEnd()) > 0) {
+                else if (end.compareTo(a.current.getEndDate() + " " + a.current.getEndTime()) > 0) {
                     Toast.makeText(a, "The break can't end after the session's end date/time.", Toast.LENGTH_SHORT).show();
                 }
                 //4. Any part of the break overlaps with another break
@@ -83,13 +83,13 @@ public class AddBreakFragment extends DialogFragment {
                     ArrayList<Break> ba = a.current.getBreaks();
                     if (!ba.isEmpty()) {
                         for (Break b : ba) {
-                            if ((start.compareTo(b.getEnd()) < 0) && (end.compareTo(b.getStart()) > 0)) {
+                            if ((start.compareTo(b.getEndDate() + " " + b.getEndTime()) < 0) && (end.compareTo(b.getStartDate() + " " + b.getEndTime()) > 0)) {
                                 Toast.makeText(a, "The break cannot overlap with another break in this session.", Toast.LENGTH_SHORT).show();
                                 return;
                             }
                         }
                     }
-                    ba.add(new Break(start, end));
+                    ba.add(new Break(startDate, startTime, endDate, endTime));
                     a.current.setBreaks(ba);
                     dismiss();
                 }

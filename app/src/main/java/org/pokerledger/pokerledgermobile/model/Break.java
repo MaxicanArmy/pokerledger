@@ -5,26 +5,26 @@ package org.pokerledger.pokerledgermobile.model;
  */
 public class Break {
     private int id = 0;
-    private String start = "";
-    private String end = "";
+    private String startDate, startTime, endDate, endTime = "";
 
     //constructors
     public Break() {}
 
-    public Break(String s, String e) {
-        this.start = s;
-        this.end = e;
+    public Break(String sd, String st, String ed, String et) {
+        this(0, sd, st, ed, et);
     }
 
-    public Break(int i, String s, String e) {
+    public Break(int i, String sd, String st, String ed, String et) {
         this.id = i;
-        this.start = s;
-        this.end = e;
+        this.startDate = sd;
+        this.startTime = st;
+        this.endDate = ed;
+        this.endTime = et;
     }
 
     @Override
     public String toString() {
-        return "start: " + this.start + "\n  end: " + this.end;
+        return "start: " + this.startDate + " " + this.startTime + "\n  end: " + this.endDate + " " + this.endTime;
     }
 
     //setters
@@ -32,12 +32,20 @@ public class Break {
         this.id = i;
     }
 
-    public void setStart(String c) {
-        this.start = c;
+    public void setStartDate(String s) {
+        this.startDate = s;
     }
 
-    public void setEnd(String c) {
-        this.end = c;
+    public void setStartTime(String s) {
+        this.startTime = s;
+    }
+
+    public void setEndDate(String s) {
+        this.endDate = s;
+    }
+
+    public void setEndTime(String s) {
+        this.endTime = s;
     }
 
     //getters
@@ -45,12 +53,20 @@ public class Break {
         return this.id;
     }
 
-    public String getStart() {
-        return this.start;
+    public String getStartDate() {
+        return this.startDate;
     }
 
-    public String getEnd() {
-        return this.end;
+    public String getStartTime() {
+        return this.startTime;
+    }
+
+    public String getEndDate() {
+        return this.endDate;
+    }
+
+    public String getEndTime() {
+        return this.endTime;
     }
 }
 

@@ -172,7 +172,7 @@ public class HistoryActivity extends BaseActivity implements AdapterView.OnItemS
 
             //for each session get session start time
             for (Session s : result) {
-                startDate = s.getStart();
+                startDate = s.getStartDate() + " " + s.getStartTime();
                 Calendar cal = Calendar.getInstance();
                 try {
                     cal.setTime(sdf.parse(startDate));

@@ -35,7 +35,7 @@ public class SessionListAdapter extends ArrayAdapter<Session>{
         TextView txtGame = (TextView) rowView.findViewById(R.id.game);
 
         txtLocation.setText(active.get(position).getLocation().getLocation());
-        txtStart.setText(active.get(position).getStart());
+        txtStart.setText(active.get(position).getStartDate() + " " + active.get(position).getStartTime());
         txtBuyIn.setText("$" + Integer.toString(active.get(position).getBuyIn()));
         txtGame.setText(active.get(position).getStructure().getStructure()+ " " + active.get(position).getGame().getGame());
         return rowView;

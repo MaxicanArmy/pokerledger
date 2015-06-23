@@ -78,7 +78,7 @@ public class StatisticsActivity extends BaseActivity {
 
                 cal = Calendar.getInstance();
                 try {
-                    cal.setTime(sdf.parse(s.getStart()));
+                    cal.setTime(sdf.parse(s.getStartDate() + " " + s.getStartTime()));
                 } catch (Exception e) {
                     //fucking parse exception needed to be handled
                 }

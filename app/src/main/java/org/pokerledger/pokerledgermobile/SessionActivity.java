@@ -269,8 +269,10 @@ public class SessionActivity extends BaseActivity {
             Toast.makeText(this, "Set start/end date/time before adding breaks.", Toast.LENGTH_SHORT).show();
         }
         else {
-            this.current.setStart(startDate + " " + startTime);
-            this.current.setEnd(endDate + " " + endTime);
+            this.current.setStartDate(startDate);
+            this.current.setStartTime(startTime);
+            this.current.setEndDate(endDate);
+            this.current.setEndTime(endTime);
             FragmentManager manager = getFragmentManager();
             AddBreakFragment dialog = new AddBreakFragment();
             dialog.show(manager, "AddBreak");
