@@ -60,6 +60,7 @@ public class HistoryActivity extends BaseActivity implements AdapterView.OnItemS
             this.tbSpinnerPos = savedInstanceState.getInt("tbSpinnerPos");
             this.tfSpinnerPos = savedInstanceState.getInt("tfSpinnerPos");
         }
+
         this.list = (ListView)findViewById(R.id.list);
         this.tbSpinner = (Spinner) findViewById(R.id.timeblocks);
         this.tfSpinner = (Spinner) findViewById(R.id.timeframes);

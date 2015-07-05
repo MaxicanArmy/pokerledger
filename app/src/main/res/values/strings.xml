@@ -24,6 +24,7 @@
     <string name="game_prompt">Select Game</string>
     <string name="location_prompt">Select Location</string>
     <string name="blinds_prompt">Select Blind</string>
+    <string name="formats_prompt">Select Format</string>
 
     <string name="tourney_radio_text">Tournament</string>
     <string name="cash_radio_text">Cash</string>
@@ -33,6 +34,7 @@
     <string name="entrants_hint">Entrants</string>
     <string name="placed_hint">Placed</string>
     <string name="new_location_hint">New</string>
+    <string name="new_format_hint">New</string>
     <string name="start_date_hint">Start Date</string>
     <string name="end_date_hint">End Date</string>
     <string name="start_time_hint">Start Time</string>

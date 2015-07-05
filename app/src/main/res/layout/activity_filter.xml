@@ -6,31 +6,20 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-<!--
+
         <TextView
-            android:id="@+id/type_header"
-            android:text="Session Type"
+            android:id="@+id/formats_header"
+            android:text="Game Formats"
             style="@style/header"/>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/typeWrapper"
+            android:id="@+id/formatsWrapper"
             android:orientation="vertical"
             style="@style/subheader"
             android:paddingBottom="@dimen/standard_padding">
 
-            <CheckBox android:id="@+id/tournament"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tournament"
-                android:checked="true"/>
-
-            <CheckBox android:id="@+id/cash"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cash Games"
-                android:checked="true"/>
         </LinearLayout>
--->
+
         <TextView
             android:id="@+id/blinds_header"
             android:text="Blinds"

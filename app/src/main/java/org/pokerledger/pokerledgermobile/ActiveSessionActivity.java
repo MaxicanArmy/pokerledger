@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Game;
+import org.pokerledger.pokerledgermobile.model.GameFormat;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Structure;
 
@@ -28,6 +30,35 @@ public class ActiveSessionActivity extends SessionActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_active_session);
+
+
+        Spinner formatsSpinner = (Spinner) findViewById(R.id.formats);
+
+        formatsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                View blinds = findViewById(R.id.blind_wrapper);
+                View tourney = findViewById(R.id.tourney);
+
+                // Check which radio button was clicked
+                switch(((GameFormat) parentView.getItemAtPosition(position)).getFormatType().getId()) {
+                    case 1:
+                        blinds.setVisibility(View.VISIBLE);
+                        tourney.setVisibility(View.GONE);
+                        break;
+                    case 2:
+                        blinds.setVisibility(View.GONE);
+                        tourney.setVisibility(View.VISIBLE);
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
 
         Calendar calender = Calendar.getInstance();
         ((Button) findViewById(R.id.start_date)).setHint(String.format("%04d-%02d-%02d", calender.get(Calendar.YEAR), calender.get(Calendar.MONTH)+1, calender.get(Calendar.DAY_OF_MONTH)));
@@ -51,27 +82,31 @@ public class ActiveSessionActivity extends SessionActivity {
             this.current.setBuyIn(Integer.parseInt(buyinText));
         }
 
-        RadioButton tourneyRadio = (RadioButton) findViewById(R.id.radio_tourney);
+        Spinner formatSpinner = (Spinner) findViewById(R.id.formats);
 
-        if (tourneyRadio.isChecked()) {
-            //next line is required to ensure that the database helper knows for what kind of session to generate queries (in case the user changed the session type)
-            this.current.setBlinds(null);
+        if (formatSpinner.getSelectedItem() != null) {
+            this.current.setFormat((GameFormat) formatSpinner.getSelectedItem());
 
-            String entrantsText = ((EditText) findViewById(R.id.entrants)).getText().toString();
+            if (this.current.getFormat().getFormatType().getId() == 2) {
+                String entrantsText = ((EditText) findViewById(R.id.entrants)).getText().toString();
 
-            if (!entrantsText.equals("")) {
-                this.current.setEntrants(Integer.parseInt(entrantsText));
+                if (!entrantsText.equals("")) {
+                    this.current.setEntrants(Integer.parseInt(entrantsText));
+                }
             }
-        }
-        else {
-            Spinner blinds = (Spinner) findViewById(R.id.blinds);
+            else {
+                Spinner blinds = (Spinner) findViewById(R.id.blinds);
 
-            if (blinds.getSelectedItem() != null) {
-                this.current.setBlinds((Blinds) blinds.getSelectedItem());
-            } else {
-                Toast.makeText(this, "You must enter the blinds.", Toast.LENGTH_SHORT).show();
-                return;
+                if (blinds.getSelectedItem() != null) {
+                    this.current.setBlinds((Blinds) blinds.getSelectedItem());
+                } else {
+                    Toast.makeText(this, "You must enter the blinds.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
+        } else {
+            Toast.makeText(this, "You must select a format.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         String startDate = ((Button) findViewById(R.id.start_date)).getHint().toString();

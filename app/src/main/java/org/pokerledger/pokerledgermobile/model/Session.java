@@ -199,7 +199,7 @@ public class Session {
         this.breaks.get(position).setEndTime(df.format(cal.get(Calendar.HOUR_OF_DAY)) + ":" + df.format(cal.get(Calendar.MINUTE)));
     }
 
-    public double getTimePlayed() {  //returns time played as a double [Hours.Minutes]
+    public int minutesPlayed() {
         Calendar t1 = Calendar.getInstance();
         Calendar t2 = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -213,7 +213,6 @@ public class Session {
         int minutes = (int) (t2.getTimeInMillis() - t1.getTimeInMillis())/60000;
 
         //start break time code
-
         if (this.breaks != null) {
             if (!this.breaks.isEmpty()) {
                 int breakMinutes = 0;
@@ -233,10 +232,24 @@ public class Session {
             }
         }
         //end break time code
-        return (double) minutes / 60;
+
+        return minutes;
     }
 
     public double getProfit() {
         return this.cashOut - this.buyIn;
+    }
+
+    public String displayFormat() {
+        String output = "";
+
+        if (this.getFormat().getFormatType().getId() == 1) {
+            output = this.getBlinds().toString() + " " + this.getStructure().getStructure() + " " + this.getGame().getGame() + " - " + this.getFormat().getFormat();
+        } else {
+            output = this.getStructure().getStructure() + " " + this.getGame().getGame() + " - " + this.getFormat().getFormat() + " " +
+                    this.getFormat().getFormatType().getFormatType();
+        }
+
+        return output;
     }
 }

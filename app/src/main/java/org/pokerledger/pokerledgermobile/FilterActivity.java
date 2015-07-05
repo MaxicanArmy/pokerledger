@@ -16,6 +16,7 @@ import org.pokerledger.pokerledgermobile.helper.DatabaseHelper;
 import org.pokerledger.pokerledgermobile.helper.SessionListStats;
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Game;
+import org.pokerledger.pokerledgermobile.model.GameFormat;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Location;
@@ -39,7 +40,7 @@ public class FilterActivity extends BaseActivity {
 
     //need variables for all the currently set filters loaded from the filters DB table
     ArrayList<Integer> filteredType = new ArrayList<Integer>();
-    private static final int typesIdBase = 10000;
+    private static final int formatsIdBase = 10000;
     ArrayList<Integer> filteredBlinds = new ArrayList<Integer>();
     private static final int blindsIdBase = 20000;
     ArrayList<Integer> filteredStructures = new ArrayList<Integer>();
@@ -56,7 +57,7 @@ public class FilterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
 
-        //new LoadTypeFilter().execute();
+        new LoadFormatsFilter().execute();
         new LoadBlindsFilter().execute();
         new LoadStructuresFilter().execute();
         new LoadGamesFilter().execute();
@@ -67,7 +68,7 @@ public class FilterActivity extends BaseActivity {
     public void saveFilters(View v) {
         new ClearFilters().execute();
 
-        //new SaveTypeFilter().execute();
+        new SaveFormatsFilter().execute();
         new SaveBlindsFilter().execute();
         new SaveStructuresFilter().execute();
         new SaveGamesFilter().execute();
@@ -124,10 +125,64 @@ public class FilterActivity extends BaseActivity {
             DatabaseHelper db = new DatabaseHelper(getApplicationContext());
 
             db.runQuery("UPDATE sessions SET filtered=0;");
+            db.runQuery("UPDATE formats SET filtered=0;");
             db.runQuery("UPDATE blinds SET filtered=0;");
             db.runQuery("UPDATE structures SET filtered=0;");
             db.runQuery("UPDATE games SET filtered=0;");
             db.runQuery("UPDATE locations SET filtered=0;");
+
+            return null;
+        }
+    }
+
+    public class LoadFormatsFilter extends AsyncTask<Void, Void, ArrayList<GameFormat>> {
+        @Override
+        protected ArrayList<GameFormat> doInBackground(Void... params) {
+            DatabaseHelper db = new DatabaseHelper(getApplicationContext());
+
+            return db.getAllFormats();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<GameFormat> result) {
+            LinearLayout formatsWrapper = (LinearLayout) findViewById(R.id.formatsWrapper);
+            CheckBox current;
+
+            for (GameFormat gf : result) {
+                current = new CheckBox(FilterActivity.this);
+                current.setId(formatsIdBase + gf.getId());
+                current.setText(gf.toString());
+
+                if (gf.getFiltered() == 0) {
+                    current.setChecked(true);
+                }
+                formatsWrapper.addView(current);
+            }
+        }
+    }
+
+    public class SaveFormatsFilter extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            DatabaseHelper db = new DatabaseHelper(getApplicationContext());
+
+            ArrayList<GameFormat> formats = db.getAllFormats();
+            CheckBox current;
+            String query;
+            String sessionQuery;
+
+            for (GameFormat gf : formats) {
+
+                current = (CheckBox) findViewById(formatsIdBase + gf.getId());
+                if (!current.isChecked()) {
+
+                    query = "UPDATE formats SET filtered=1 WHERE format_id=" + gf.getId() + ";";
+                    sessionQuery = "UPDATE sessions SET filtered=1 WHERE format=" + gf.getId() + ";";
+
+                    db.runQuery(query);
+                    db.runQuery(sessionQuery);
+                }
+            }
 
             return null;
         }
@@ -365,23 +420,23 @@ public class FilterActivity extends BaseActivity {
         protected Void doInBackground(Void... params) {
             DatabaseHelper db = new DatabaseHelper(getApplicationContext());
 
-            String startDate = ((Button) findViewById(R.id.start_date)).getHint().toString() + " 00:00";
-            String endDate = ((Button) findViewById(R.id.end_date)).getHint().toString() + " 23:59";
+            String startDate = ((Button) findViewById(R.id.start_date)).getHint().toString();
+            String endDate = ((Button) findViewById(R.id.end_date)).getHint().toString();
 
             String query;
             String sessionQuery;
 
             if (startDate != "Start Date") {
-                query = "UPDATE filter SET start='" + startDate + "';";
-                sessionQuery = "UPDATE sessions SET filtered=1 WHERE start < '" + startDate + "';";
+                query = "UPDATE date_filter SET start_date='" + startDate + "';";
+                sessionQuery = "UPDATE sessions SET filtered=1 WHERE start_date < '" + startDate + "';";
 
                 db.runQuery(query);
                 db.runQuery(sessionQuery);
             }
 
             if (endDate != "End Date") {
-                query = "UPDATE filter SET end='" + endDate + "';";
-                sessionQuery = "UPDATE sessions SET filtered=1 WHERE end > '" + endDate + "';";
+                query = "UPDATE date_filter SET end_date='" + endDate + "';";
+                sessionQuery = "UPDATE sessions SET filtered=1 WHERE end_date > '" + endDate + "';";
 
                 db.runQuery(query);
                 db.runQuery(sessionQuery);

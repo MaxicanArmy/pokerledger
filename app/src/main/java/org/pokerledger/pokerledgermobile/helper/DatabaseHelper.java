@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Break;
@@ -153,7 +152,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //FILTER
     private static final String CREATE_TABLE_DATE_FILTER = "CREATE TABLE " + TABLE_DATE_FILTER + " (" + KEY_FILTER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + KEY_START_DATE + " DATE, " + KEY_START_TIME + " TIME, " + KEY_END_DATE + " DATE, " + KEY_END_TIME + " TIME);";
+            + KEY_START_DATE + " DATE, " + KEY_END_DATE + " DATE);";
 
     //constructor
     public DatabaseHelper(Context context) {
@@ -253,11 +252,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         //populate filter table
         values = new ContentValues();
-        values.put(KEY_START_DATE, "NULL");
-        values.put(KEY_START_TIME, "NULL");
-        values.put(KEY_END_DATE, "NULL");
-        values.put(KEY_END_TIME, "NULL");
+        values.put(KEY_START_DATE, "0000-00-00");
+        values.put(KEY_END_DATE, "0000-00-00");
         db.insert(TABLE_DATE_FILTER, null, values);
+
 
         //populate format_types table
         values = new ContentValues();
@@ -368,6 +366,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return locations;
     }
 
+    public ArrayList<GameFormat> getAllFormats() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        ArrayList<GameFormat> formats = new ArrayList<GameFormat>();
+        String query = "SELECT formats.format_id, formats.format, formats.filtered, format_types.format_type_id, format_types.format_type FROM " + TABLE_FORMAT +
+                " INNER JOIN format_types ON formats.format_type=format_types.format_type_id ORDER BY format_types.format_type_id ASC";
+
+        Cursor c = db.rawQuery(query, null);
+
+        //loop through rows and add to location array if any results returned
+        if (c.moveToFirst()) {
+            do {
+                GameFormat gf = new GameFormat();
+                gf.setId(c.getInt(c.getColumnIndex(KEY_FORMAT_ID)));
+                gf.setFormat(c.getString(c.getColumnIndex(KEY_FORMAT)));
+                gf.setFormatType(new FormatType(c.getInt(c.getColumnIndex(KEY_FORMAT_TYPE_ID)), c.getString(c.getColumnIndex(KEY_FORMAT_TYPE))));
+                gf.setFiltered(c.getInt(c.getColumnIndex(KEY_FILTERED)));
+
+                formats.add(gf);
+            } while (c.moveToNext());
+        }
+        c.close();
+        return formats;
+    }
+
     public ArrayList<Blinds> getAllBlinds() {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -402,7 +425,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ArrayList<Session> sessions = new ArrayList<Session>();
 
         String query = "SELECT " + TABLE_SESSION + "." + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME + ", " +
-                KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_FORMAT_ID + ", " + TABLE_FORMAT + "." + KEY_FORMAT + ", " + TABLE_FORMAT + "." + KEY_FILTERED + ", " +
+                KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_FORMAT_ID + ", " + TABLE_FORMAT + "." + KEY_FORMAT + ", " +
                 KEY_FORMAT_TYPE_ID + ", " + TABLE_FORMAT_TYPES + "." + KEY_FORMAT_TYPE + ", " + KEY_STATE + ", " + KEY_STRUCTURE_ID + ", " +
                 TABLE_STRUCTURE + "." + KEY_STRUCTURE + ", " + KEY_GAME_ID + ", " + TABLE_GAME + "." + KEY_GAME + ", " + KEY_LOCATION_ID + ", " +
                 TABLE_LOCATION + "." + KEY_LOCATION + ", " + TABLE_SESSION + "." + KEY_FILTERED + ", " + TABLE_BLINDS + "." + KEY_BLIND_ID + ", " +
@@ -419,7 +442,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " ON " + TABLE_CASH + "." + KEY_BLINDS + "=" + TABLE_BLINDS + "." + KEY_BLIND_ID + " WHERE " + KEY_STATE + "=" + state +
                 " AND " + TABLE_SESSION + "." + KEY_FILTERED + "=0 ORDER BY " + KEY_START_DATE + " DESC, " + KEY_START_TIME + " DESC;";
 
-        Log.v("getAllSessionsQuery", query);
         Cursor c = db.rawQuery(query, null);
 
         //loop through rows and add to session if any results returned
@@ -445,15 +467,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                             c.getInt(c.getColumnIndex(KEY_STRADDLE)), c.getInt(c.getColumnIndex(KEY_BRING_IN)), c.getInt(c.getColumnIndex(KEY_ANTE)),
                             c.getInt(c.getColumnIndex(KEY_PER_POINT)), c.getInt(c.getColumnIndex(KEY_FILTERED))));
                 }
-                else {
-                    s.setBlinds(null);
-                }
 
                 if (!c.isNull(c.getColumnIndex(KEY_ENTRANTS))) {
                     s.setEntrants(c.getInt(c.getColumnIndex(KEY_ENTRANTS)));
                 }
 
-                if (state == 0 && !c.isNull(c.getColumnIndex(KEY_PLACED))) {
+                if (!c.isNull(c.getColumnIndex(KEY_PLACED))) {
                     s.setPlaced(c.getInt(c.getColumnIndex(KEY_PLACED)));
                 }
 
@@ -482,96 +501,94 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sessions;
     }
 
-    public int saveSession(Session s) {
-        int flag = 1;
+    public void saveSession(Session s) {
         SQLiteDatabase db = this.getWritableDatabase();
 
-        if (s.getId() == 0) {
-            String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME + ", " +
-                    KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_FORMAT + ", " + KEY_LOCATION + ", " + KEY_STATE + ") VALUES ('" + s.getStartDate() +
-                    "', '" + s.getStartTime() + "', '" + s.getEndDate() + "', '" + s.getEndTime() + "', " + s.getBuyIn() + ", " + s.getCashOut() + ", " +
-                    s.getStructure().getId() + ", " + s.getGame().getId() + ", " + s.getFormat().getId() + ", " + s.getLocation().getId() + ", " + s.getState() + ");";
+        String query = "INSERT INTO " + TABLE_SESSION + " (" + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME + ", " +
+                KEY_BUY_IN + ", " + KEY_CASH_OUT + ", " + KEY_STRUCTURE + ", " + KEY_GAME + ", " + KEY_FORMAT + ", " + KEY_LOCATION + ", " + KEY_STATE + ", " +
+                KEY_FILTERED + ") VALUES ('" + s.getStartDate() + "', '" + s.getStartTime() + "', '" + s.getEndDate() + "', '" + s.getEndTime() + "', " + s.getBuyIn() + ", " +
+                s.getCashOut() + ", " + s.getStructure().getId() + ", " + s.getGame().getId() + ", " + s.getFormat().getId() + ", " + s.getLocation().getId() + ", " +
+                s.getState() + ", 0);";
 
-            db.execSQL(query);
+        db.execSQL(query);
 
-            Cursor c = db.rawQuery("SELECT last_insert_rowid() AS " + KEY_SESSION_ID + ";", null);
-            if (c.moveToFirst()) {
-                int session_id = c.getInt(c.getColumnIndex(KEY_SESSION_ID));
+        Cursor c = db.rawQuery("SELECT last_insert_rowid() AS " + KEY_SESSION_ID + ";", null);
 
-                if (s.getBlinds() != null) {
-                    db.execSQL("INSERT INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + session_id + ", " + s.getBlinds().getId() + ");");
-                } else {
-                    db.execSQL("INSERT INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + session_id + ", " +
-                            s.getEntrants() + ", " + s.getPlaced() + ");");
-                }
+        if (c.moveToFirst()) {
+            int session_id = c.getInt(c.getColumnIndex(KEY_SESSION_ID));
 
-                if (s.getBreaks() != null) {
-                    ArrayList<Break> breaks = s.getBreaks();
-                    for (int i = 0; i < breaks.size(); i++) {
-                        db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE +
-                                ", " + KEY_END_TIME + ") VALUES (" + session_id + ", '" + breaks.get(i).getStartDate() + "', '" + breaks.get(i).getStartTime() +
-                                "', " + breaks.get(i).getEndDate() + "', '" + breaks.get(i).getEndTime() + "');");
-                    }
-                }
-
-                if (s.getNote() != null) {
-                    db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + session_id + ", " +
-                            DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
-                }
+            if (s.getFormat().getFormatType().getId() == 1) {
+                db.execSQL("INSERT INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + session_id + ", " + s.getBlinds().getId() + ");");
             } else {
-                flag = 0;
-            }
-
-            c.close();
-        } else if (s.getId() > 0) {
-            String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_START_DATE + "='" + s.getStartDate() + "', " + KEY_START_TIME + "='" + s.getStartTime() + "' " +
-                    KEY_END_DATE + "='" + s.getEndDate() + "', " + KEY_END_TIME + "='" + s.getEndTime() + "' " + KEY_BUY_IN + "=" +
-                    s.getBuyIn() + ", " + KEY_CASH_OUT + "=" + s.getCashOut() + ", " + KEY_STRUCTURE + "=" + s.getStructure().getId() + ", " + KEY_GAME +
-                    "=" + s.getGame().getId() + ", " + KEY_FORMAT + "=" + s.getFormat().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " +
-                    KEY_STATE + "=" + s.getState() + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";";
-
-            db.execSQL(query);
-
-            if (s.getBlinds() != null) {
-                //if the user saves an active session as a tournament then changes it to a cash game when finishing the session the database would be compromised
-                //without the insert or ignore and delete queries
-                db.execSQL("INSERT OR IGNORE INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + s.getId() + ", " + s.getBlinds().getId() + ");");
-                db.execSQL("UPDATE " + TABLE_CASH + " SET " + KEY_SESSION_ID + "=" + s.getId() + ", " + KEY_BLINDS + "=" + s.getBlinds().getId() + " WHERE " +
-                        KEY_SESSION_ID + "=" + s.getId() + ";");
-                //run delete query on tournament table to be certain the user didn't change session type between creating and finishing
-                db.execSQL("DELETE FROM " + TABLE_TOURNAMENT + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
-            } else {
-                db.execSQL("INSERT OR IGNORE INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + s.getId() + ", " +
+                db.execSQL("INSERT INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + session_id + ", " +
                         s.getEntrants() + ", " + s.getPlaced() + ");");
-                db.execSQL("UPDATE " + TABLE_TOURNAMENT + " SET " + KEY_SESSION_ID + "=" + s.getId() + ", " + KEY_ENTRANTS + "=" + s.getEntrants() + ", " +
-                        KEY_PLACED + "=" + s.getPlaced() + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
-                //run delete query on cash table to be certain the user didn't change session type between creating and finishing
-                db.execSQL("DELETE FROM " + TABLE_CASH + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
             }
 
-            if (s.getBreaks() != null) {
-                //run delete statement then insert them all fresh to clear out any breaks that were created by toggleBreak then deleted in finishSessionActivity
-                db.execSQL("DELETE FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
-                ArrayList<Break> breaks = s.getBreaks();
-                for (int i = 0; i < breaks.size(); i++) {
-                    db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME +
-                            ") VALUES (" + s.getId() + ", '" + breaks.get(i).getStartDate() + "', '" + breaks.get(i).getStartTime() + "', '" + breaks.get(i).getEndDate() +
-                            ", " + breaks.get(i).getEndTime() + "');");
-                }
+            ArrayList<Break> breaks = s.getBreaks();
+            for (int i = 0; i < breaks.size(); i++) {
+                db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE +
+                        ", " + KEY_END_TIME + ") VALUES (" + session_id + ", '" + breaks.get(i).getStartDate() + "', '" + breaks.get(i).getStartTime() +
+                        "', '" + breaks.get(i).getEndDate() + "', '" + breaks.get(i).getEndTime() + "');");
             }
 
-            //run delete query for this id on notes table so we can just run an insert and not have to check for duplicates
-            db.execSQL("DELETE FROM " + TABLE_NOTE + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
-            if (s.getNote() != null) {
-                db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + s.getId() + ", " +
+            if (s.getNote() != "") {
+                db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + session_id + ", " +
                         DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
             }
-        } else {
-            flag = 0;
         }
 
+        c.close();
+
         db.close();
-        return flag;
+    }
+
+    public void editSession(Session s) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query = "UPDATE " + TABLE_SESSION + " SET " + KEY_START_DATE + "='" + s.getStartDate() + "', " + KEY_START_TIME + "='" + s.getStartTime() + "', " +
+                KEY_END_DATE + "='" + s.getEndDate() + "', " + KEY_END_TIME + "='" + s.getEndTime() + "', " + KEY_BUY_IN + "=" +
+                s.getBuyIn() + ", " + KEY_CASH_OUT + "=" + s.getCashOut() + ", " + KEY_STRUCTURE + "=" + s.getStructure().getId() + ", " + KEY_GAME +
+                "=" + s.getGame().getId() + ", " + KEY_FORMAT + "=" + s.getFormat().getId() + ", " + KEY_LOCATION + "=" + s.getLocation().getId() + ", " +
+                KEY_STATE + "=" + s.getState() + ", " + KEY_FILTERED + "=0 WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";";
+
+        db.execSQL(query);
+
+        if (s.getFormat().getFormatType().getId() == 1) {
+            //if the user saves an active session as a tournament then changes it to a cash game when finishing the session the database would be compromised
+            //without the insert or ignore and delete queries
+            db.execSQL("INSERT OR IGNORE INTO " + TABLE_CASH + " (" + KEY_SESSION_ID + ", " + KEY_BLINDS + ") VALUES (" + s.getId() + ", " + s.getBlinds().getId() + ");");
+            db.execSQL("UPDATE " + TABLE_CASH + " SET " + KEY_SESSION_ID + "=" + s.getId() + ", " + KEY_BLINDS + "=" + s.getBlinds().getId() + " WHERE " +
+                    KEY_SESSION_ID + "=" + s.getId() + ";");
+            //run delete query on tournament table to be certain the user didn't change session type between creating and finishing
+            db.execSQL("DELETE FROM " + TABLE_TOURNAMENT + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
+        } else {
+            db.execSQL("INSERT OR IGNORE INTO " + TABLE_TOURNAMENT + " (" + KEY_SESSION_ID + ", " + KEY_ENTRANTS + ", " + KEY_PLACED + ") VALUES (" + s.getId() + ", " +
+                    s.getEntrants() + ", " + s.getPlaced() + ");");
+            db.execSQL("UPDATE " + TABLE_TOURNAMENT + " SET " + KEY_SESSION_ID + "=" + s.getId() + ", " + KEY_ENTRANTS + "=" + s.getEntrants() + ", " +
+                    KEY_PLACED + "=" + s.getPlaced() + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
+            //run delete query on cash table to be certain the user didn't change session type between creating and finishing
+            db.execSQL("DELETE FROM " + TABLE_CASH + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
+        }
+
+        //run delete statement then insert them all fresh to clear out any breaks that were created by toggleBreak then deleted in finishSessionActivity
+        db.execSQL("DELETE FROM " + TABLE_BREAK + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
+
+        if (s.getBreaks() != null) {
+            ArrayList<Break> breaks = s.getBreaks();
+            for (int i = 0; i < breaks.size(); i++) {
+                db.execSQL("INSERT INTO " + TABLE_BREAK + " (" + KEY_SESSION_ID + ", " + KEY_START_DATE + ", " + KEY_START_TIME + ", " + KEY_END_DATE + ", " + KEY_END_TIME +
+                        ") VALUES (" + s.getId() + ", '" + breaks.get(i).getStartDate() + "', '" + breaks.get(i).getStartTime() + "', '" + breaks.get(i).getEndDate() +
+                        "', '" + breaks.get(i).getEndTime() + "');");
+            }
+        }
+
+        //run delete query for this id on notes table so we can just run an insert and not have to check for duplicates
+        db.execSQL("DELETE FROM " + TABLE_NOTE + " WHERE " + KEY_SESSION_ID + "=" + s.getId() + ";");
+        if (s.getNote() != null) {
+            db.execSQL("INSERT INTO " + TABLE_NOTE + " (" + KEY_SESSION_ID + ", " + KEY_NOTE + ") VALUES (" + s.getId() + ", " +
+                    DatabaseUtils.sqlEscapeString(s.getNote()) + ");");
+        }
+
     }
 
     public void toggleBreak(int id) {
@@ -662,59 +679,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public HashMap<String, String> getFilterDates() {
         HashMap<String, String> result = new HashMap<String, String>();
-
-        /*
+        result.put("start", "Start Date");
+        result.put("end", "End Date");
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         String query = "SELECT * FROM " + TABLE_DATE_FILTER + " WHERE " + KEY_FILTER_ID + "=1;";
 
         Cursor c;
-        int flag = 0;
+        String startDate = "";
+        String endDate = "";
 
-        do {
-            c = db.rawQuery(query, null);
+        c = db.rawQuery(query, null);
 
-            if (c.moveToFirst()) {
-                if (c.isNull(c.getColumnIndex(KEY_START_DATE))) {
-                    db.execSQL("UPDATE " + TABLE_FILTER + " SET " + KEY_START + "=(SELECT MIN(" + KEY_START + ") FROM " + TABLE_SESSION + ");");
-                }
-
-                if (c.isNull(c.getColumnIndex(KEY_END))) {
-                    db.execSQL("UPDATE " + TABLE_FILTER + " SET " + KEY_END + "=(SELECT MAX(" + KEY_START + ") FROM " + TABLE_SESSION + ");");
-                }
+        if (c.moveToFirst()) {
+            if (!c.getString(c.getColumnIndex(KEY_START_DATE)).equals("0000-00-00")) {
+                startDate = c.getString(c.getColumnIndex(KEY_START_DATE));
+                result.put("start", startDate);
             }
-            flag++;
-        } while ((c.isNull(c.getColumnIndex(KEY_START)) || c.isNull(c.getColumnIndex(KEY_END))) && flag < 2); //without flag this will loop infinitely if there are no sessions
 
-        String startDateTime = c.getString(c.getColumnIndex(KEY_START));
-
-        Pattern DATE_PATTERN = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2})");
-        Matcher m = DATE_PATTERN.matcher(startDateTime);
-        String startDate;
-
-        if (m.find()) {
-            startDate = m.group(1);
-            result.put("start", startDate);
-        }
-        else {
-            result.put("start", "Start Date");
+            if (!c.getString(c.getColumnIndex(KEY_END_DATE)).equals("0000-00-00")) {
+                endDate = c.getString(c.getColumnIndex(KEY_END_DATE));
+                result.put("end", endDate);
+            }
         }
 
-        String endDateTime = c.getString(c.getColumnIndex(KEY_END));
-
-        m = DATE_PATTERN.matcher(endDateTime);
-        String endDate;
-
-        if (m.find()) {
-            endDate = m.group(1);
-            result.put("end", endDate);
-        }
-        else {
-            result.put("end", "End Date");
-        }
-        c.close();
-*/
         return result;
     }
 }

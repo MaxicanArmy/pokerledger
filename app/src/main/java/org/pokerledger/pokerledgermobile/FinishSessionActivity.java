@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -16,6 +17,7 @@ import com.google.gson.Gson;
 
 import org.pokerledger.pokerledgermobile.model.Blinds;
 import org.pokerledger.pokerledgermobile.model.Game;
+import org.pokerledger.pokerledgermobile.model.GameFormat;
 import org.pokerledger.pokerledgermobile.model.Location;
 import org.pokerledger.pokerledgermobile.model.Session;
 import org.pokerledger.pokerledgermobile.model.Structure;
@@ -35,6 +37,35 @@ public class FinishSessionActivity extends SessionActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_finish_session);
 
+
+        Spinner formatsSpinner = (Spinner) findViewById(R.id.formats);
+
+        formatsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                View blinds = findViewById(R.id.blind_wrapper);
+                View tourney = findViewById(R.id.tourney);
+
+                // Check which radio button was clicked
+                switch (((GameFormat) parentView.getItemAtPosition(position)).getFormatType().getId()) {
+                    case 1:
+                        blinds.setVisibility(View.VISIBLE);
+                        tourney.setVisibility(View.GONE);
+                        break;
+                    case 2:
+                        blinds.setVisibility(View.GONE);
+                        tourney.setVisibility(View.VISIBLE);
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
+
         //RETRIEVE STRUCTURES, GAMES, AND LOCATIONS FROM DB AND LOAD VALUES IN TO THE SPINNERS
         new InitializeData().execute();
 
@@ -45,42 +76,12 @@ public class FinishSessionActivity extends SessionActivity  {
 
             ((EditText) findViewById(R.id.buy_in)).setText(Integer.toString(this.current.getBuyIn()));
 
-            if (this.current.getBlinds().toString().equals("")) {
-                RadioButton type = (RadioButton) findViewById(R.id.radio_tourney);
-                type.toggle();
-                this.toggleRadio(type);
-
+            if (this.current.getEntrants() != 0) {
                 ((EditText) findViewById(R.id.entrants)).setText(Integer.toString(this.current.getEntrants()));
             }
 
-            /*
-            String startDateTime = this.current.getStart();
-
-            Pattern DATE_PATTERN = Pattern.compile("^(\\d{4}-\\d{2}-\\d{2})");
-            Matcher m = DATE_PATTERN.matcher(startDateTime);
-            Button startDateBtn = (Button) findViewById(R.id.start_date);
-            String startDate;
-
-            while (m.find()) {
-                startDate = m.group(1);
-                startDateBtn.setHint(startDate);
-            }
-
-            Pattern TIME_PATTERN = Pattern.compile(" (\\d{2}:\\d{2})$");
-            m = TIME_PATTERN.matcher(startDateTime);
-            Button startTimeBtn = (Button) findViewById(R.id.start_time);
-            String startTime;
-
-            while (m.find()) {
-                startTime = m.group(1);
-                startTimeBtn.setHint(startTime);
-            }
-            */
             ((Button) findViewById(R.id.start_date)).setHint(this.current.getStartDate());
             ((Button) findViewById(R.id.start_time)).setHint(this.current.getStartTime());
-
-            ((Button) findViewById(R.id.end_date)).setHint(this.current.getEndDate());
-            ((Button) findViewById(R.id.end_time)).setHint(this.current.getEndTime());
 
             Calendar cal = Calendar.getInstance();
             DecimalFormat df = new DecimalFormat("00");
@@ -91,132 +92,9 @@ public class FinishSessionActivity extends SessionActivity  {
                 this.current.breakEnd();
             }
 
-            ((EditText) findViewById(R.id.note)).setText(this.current.getNote());
-        }
-    }
-
-    public void saveFinishedSession(View v) {
-        String buyinText = ((EditText) findViewById(R.id.buy_in)).getText().toString();
-
-        if (buyinText.equals("")) {
-            Toast.makeText(this, "You must enter a buy in amount.", Toast.LENGTH_SHORT).show();
-            findViewById(R.id.buy_in).requestFocus();
-            return;
-        }
-        else {
-            this.current.setBuyIn(Integer.parseInt(buyinText));
-        }
-
-        String cashOutText = ((EditText) findViewById(R.id.cash_out)).getText().toString();
-
-        if (cashOutText.equals("")) {
-            Toast.makeText(this, "You must enter a cash out amount.", Toast.LENGTH_SHORT).show();
-            findViewById(R.id.cash_out).requestFocus();
-            return;
-        }
-        else {
-            this.current.setCashOut(Integer.parseInt(cashOutText));
-        }
-
-        RadioButton tourneyRadio = (RadioButton) findViewById(R.id.radio_tourney);
-
-        if (tourneyRadio.isChecked()) {
-            //next line is required to ensure that the database helper knows for what kind of session to generate queries (in case the user changed the session type)
-            this.current.setBlinds(null);
-
-            String entrantsText = ((EditText) findViewById(R.id.entrants)).getText().toString();
-
-            if (entrantsText.equals("")) {
-                Toast.makeText(this, "You must enter the number of entrants.", Toast.LENGTH_SHORT).show();
-                findViewById(R.id.entrants).requestFocus();
-                return;
-            }
-            else {
-                this.current.setEntrants(Integer.parseInt(entrantsText));
-            }
-
-            String placedText = ((EditText) findViewById(R.id.placed)).getText().toString();
-
-            if (placedText.equals("")) {
-                Toast.makeText(this, "You must enter what position you placed.", Toast.LENGTH_SHORT).show();
-                findViewById(R.id.placed).requestFocus();
-                return;
-            }
-            else {
-                this.current.setPlaced(Integer.parseInt(placedText));
+            if (this.current.getNote() != "") {
+                ((EditText) findViewById(R.id.note)).setText(this.current.getNote());
             }
         }
-        else {
-            Spinner blinds = (Spinner) findViewById(R.id.blinds);
-
-            if (blinds.getSelectedItem() != null) {
-                this.current.setBlinds((Blinds) blinds.getSelectedItem());
-            } else {
-                Toast.makeText(this, "You must enter the blinds.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
-
-        String startDate = ((Button) findViewById(R.id.start_date)).getHint().toString();
-
-        if (startDate.equals("Start Date")) {
-            Toast.makeText(this, "Select a start date for this session.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String startTime = ((Button) findViewById(R.id.start_time)).getHint().toString();
-
-        if (startTime.equals("Start Time")) {
-            Toast.makeText(this, "Select a start time for this session.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        this.current.setStartDate(startDate);
-        this.current.setStartTime(startTime);
-
-        String endDate = ((Button) findViewById(R.id.end_date)).getHint().toString();
-
-        if (endDate.equals("End Date")) {
-            Toast.makeText(this, "Select an end date for this session.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String endTime = ((Button) findViewById(R.id.end_time)).getHint().toString();
-
-        if (endTime.equals("End Time")) {
-            Toast.makeText(this, "Select an end time for this session.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        this.current.setEndDate(endDate);
-        this.current.setEndTime(endTime);
-
-        if ((this.current.getEndDate() + this.current.getEndTime()).compareTo(this.current.getStartDate() + this.current.getStartTime()) <= 0) {
-            Toast.makeText(this, "Session end time must be after start time.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String note = ((EditText) findViewById(R.id.note)).getText().toString();
-
-        if (!note.equals("")) {
-            this.current.setNote(note);
-        }
-
-        this.current.setStructure((Structure) ((Spinner) findViewById(R.id.structure)).getSelectedItem());
-        this.current.setGame((Game) ((Spinner) findViewById(R.id.game)).getSelectedItem());
-
-        Spinner location = (Spinner) findViewById(R.id.location);
-
-        if (location.getSelectedItem() != null) {
-            this.current.setLocation((Location) location.getSelectedItem());
-        } else {
-            Toast.makeText(this, "You must enter the location.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        this.current.setState(0);
-        new SaveSession().execute(this.current);
-        setResult(RESULT_OK);
-        finish();
     }
 }

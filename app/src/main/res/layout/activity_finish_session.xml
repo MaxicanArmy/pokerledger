@@ -54,31 +54,31 @@
         </LinearLayout>
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/wrapper3"
-            android:orientation="vertical"
+            android:id="@+id/format_wrapper"
+            android:orientation="horizontal"
             style="@style/Wrapper">
 
-            <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/type"
-                android:layout_width="fill_parent"
+            <Spinner
+                android:id="@+id/formats"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_weight=".80"
+                android:prompt="@string/formats_prompt"
+                android:textSize="10dp" />
 
-                <RadioButton android:id="@+id/radio_cash"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight=".50"
-                    android:text="@string/cash_radio_text"
-                    android:checked="true"
-                    android:onClick="toggleRadio"/>
+            <Button
+                android:id="@+id/new_format"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".20"
+                android:hint="@string/new_format_hint"
+                android:onClick="showNewBlindDialog" />
+        </LinearLayout>
 
-                <RadioButton android:id="@+id/radio_tourney"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight=".50"
-                    android:text="@string/tourney_radio_text"
-                    android:onClick="toggleRadio"/>
-            </RadioGroup>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/format_info_wrapper"
+            android:orientation="vertical"
+            style="@style/Wrapper">
 
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/blind_wrapper"

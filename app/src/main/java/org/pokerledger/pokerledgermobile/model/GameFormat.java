@@ -24,6 +24,11 @@ public class GameFormat {
         this.filtered = flt;
     }
 
+    @Override
+    public String toString() {
+        return this.format + " " + formatType.getFormatType();
+    }
+
     //setters
     public void setId(int id) {
         this.id = id;

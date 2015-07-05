@@ -61,11 +61,12 @@ public class StatisticsActivity extends BaseActivity {
             SessionListStats stats;
 
             for (Session s : result) {
-                if (s.getBlinds() != null) {
-                    key = s.getGame().toString() + " " + s.getStructure().toString() + " " + s.getBlinds().toString();
+                //load sessions in to HashMap for day of the week stats
+                if (s.getFormat().getFormatType().getId() == 1) {
+                    key = s.getBlinds().toString() + " " + s.getStructure().toString() + " " + s.getGame().toString();
                 }
                 else {
-                    key = s.getGame().toString() + " " + s.getStructure().toString() + " " + " Tournament";
+                    key = s.getStructure().toString() + " " + s.getGame().toString() + " Tournament";
                 }
 
                 current = bsgStats.get(key);
@@ -76,6 +77,7 @@ public class StatisticsActivity extends BaseActivity {
                     bsgStats.put(key, new SessionListStats(s));
                 }
 
+                //load sessions in to HashMap for day of the week stats
                 cal = Calendar.getInstance();
                 try {
                     cal.setTime(sdf.parse(s.getStartDate() + " " + s.getStartTime()));
@@ -108,14 +110,7 @@ public class StatisticsActivity extends BaseActivity {
 
                 stats = entry.getValue();
 
-                Session ex = stats.getSessions().get(0); //get an example session to retrieve the blinds, structure and game
-                if (ex.getBlinds() == null) {
-                    label = ex.getStructure().toString() + " " + ex.getGame().toString() + " Tournament";
-                }
-                else {
-                    label = ex.getBlinds().toString() + " " + ex.getStructure().toString() + " " + ex.getGame().toString();
-                }
-                currentBSG.setText(label);
+                currentBSG.setText(entry.getKey());
 
                 if (stats.getProfit() < 0 ) {
                     currentHourly.setTextColor(Color.parseColor("#ff0000"));
