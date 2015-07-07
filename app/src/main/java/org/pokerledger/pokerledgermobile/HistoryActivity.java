@@ -299,7 +299,7 @@ public class HistoryActivity extends BaseActivity {
         HistoryListAdapter adapter;
         SessionListStats stats;
         if (tfSpinner.getAdapter().getCount() > 0) {
-            switch (tbSpinnerPos) {
+            switch (tbSpinnerPos) { 
                 case 0 :
                     stats = HistoryActivity.this.weekly.get(tfSpinner.getItemAtPosition(tfSpinnerPos).toString());
                     break;
